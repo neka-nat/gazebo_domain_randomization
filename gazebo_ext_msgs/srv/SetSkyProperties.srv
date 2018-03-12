@@ -1,0 +1,7 @@
+float64 sunrise
+float64 sunset
+std_msgs/ColorRGBA cloud_ambient
+float64 mean_cloud_size
+---
+bool success          # return true if get successful
+string status_message # comments if available

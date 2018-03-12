@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(gazebo_ext_msgs)
+
+find_package(catkin REQUIRED COMPONENTS
+  std_msgs
+  std_srvs
+  message_generation
+  )
+
+# add_message_files(
+#   )
+
+add_service_files(DIRECTORY srv FILES
+  SetSkyProperties.srv
+  GetSkyProperties.srv
+  )
+
+generate_messages(DEPENDENCIES
+  std_msgs
+  )
+
+catkin_package(
+  CATKIN_DEPENDS
+  message_runtime
+  std_msgs
+  std_srvs
+)
