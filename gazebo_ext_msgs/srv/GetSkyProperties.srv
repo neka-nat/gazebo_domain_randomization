@@ -1,7 +1,11 @@
 ---
+float64 time
 float64 sunrise
 float64 sunset
+float64 wind_speed
+float64 wind_direction
 std_msgs/ColorRGBA cloud_ambient
+float64 humidity
 float64 mean_cloud_size
 bool success          # return true if get successful
 string status_message # comments if available

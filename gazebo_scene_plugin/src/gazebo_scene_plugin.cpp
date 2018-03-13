@@ -160,27 +160,48 @@ void GazeboScenePlugin::advertiseServices()
 bool GazeboScenePlugin::getSkyProperties(gazebo_msgs::GetSkyProperties::Request &req,
                                          gazebo_msgs::GetSkyProperties::Response &res)
 {
-  gazebo::physics::LightPtr phy_light = world_->Light(req.light_name);
+  // Get scene pointer
+  rendering::ScenePtr scene = rendering::get_scene();
 
-  if (phy_light == NULL)
+  // Wait until the scene is initialized.
+  if (!scene || !scene->Initialized() || !scene->dataPtr->skyx)
   {
-      res.success = false;
-      res.status_message = "getLightProperties: Requested light " + req.light_name + " not found!";
+    res.success = false;
+    res.status_message = "getSkyProperties: Could not access the scene!";
   }
   else
   {
-    gazebo::msgs::Light light;
-    phy_light->FillMsg(light);
+    Ogre::Root::getSingletonPtr()->addFrameListener(scene->dataPtr->skyx);
+    scene->dataPtr->skyx->update(0);
 
-    res.diffuse.r = light.diffuse().r();
-    res.diffuse.g = light.diffuse().g();
-    res.diffuse.b = light.diffuse().b();
-    res.diffuse.a = light.diffuse().a();
+    scene->dataPtr->skyx->setVisible(true);
 
-    res.attenuation_constant = light.attenuation_constant();
-    res.attenuation_linear = light.attenuation_linear();
-    res.attenuation_quadratic = light.attenuation_quadratic();
+    SkyX::VClouds::VClouds *vclouds =
+      scene->dataPtr->skyx->getVCloudsManager()->getVClouds();
 
+    Ogre::Vector3 t = scene->dataPtr->skyxController->getTime();
+    t.x = ignition::math::clamp(req.time, 0.0, 24.0);
+    t.y = ignition::math::clamp(req.sunrise, 0.0, 24.0);
+    t.z = ignition::math::clamp(req.sunset, 0.0, 24.0);
+    scene->dataPtr->skyxController->setTime(t);
+
+    vclouds->setWindSpeed(req.wind_speed);
+    vclouds->setWindDirection(Ogre::Radian(req.wind_direction));
+    vclouds->setAmbientFactors(Ogre::Vector4(
+          req.cloud_ambient.r,
+          req.cloud_ambient.g,
+          req.cloud_ambient.b,
+          req.cloud_ambient.a));
+
+    Ogre::Vector2 wheater = vclouds->getWheater();
+    vclouds->setWheater(ignition::math::clamp(req.humidity, 0.0, 1.0),
+                        wheater.y, true);
+
+    Ogre::Vector2 wheater = vclouds->getWheater();
+    vclouds->setWheater(wheater.x,
+      ignition::math::clamp(req.mean_cloud_size, 0.0, 1.0), true);
+
+    scene->dataPtr->skyx->update(0);
     res.success = true;
   }
 
@@ -190,30 +211,48 @@ bool GazeboScenePlugin::getSkyProperties(gazebo_msgs::GetSkyProperties::Request 
 bool GazeboScenePlugin::setSkyProperties(gazebo_msgs::SetSkyProperties::Request &req,
                                          gazebo_msgs::SetSkyProperties::Response &res)
 {
-  gazebo::physics::LightPtr phy_light = world_->Light(req.light_name);
+  // Get scene pointer
+  rendering::ScenePtr scene = rendering::get_scene();
 
-  if (phy_light == NULL)
+  // Wait until the scene is initialized.
+  if (!scene || !scene->Initialized() || !scene->dataPtr->skyx)
   {
     res.success = false;
-    res.status_message = "setLightProperties: Requested light " + req.light_name + " not found!";
+    res.status_message = "setSkyProperties: Could not access the scene!";
   }
   else
   {
-    gazebo::msgs::Light light;
+    Ogre::Root::getSingletonPtr()->addFrameListener(scene->dataPtr->skyx);
+    scene->dataPtr->skyx->update(0);
 
-    phy_light->FillMsg(light);
+    scene->dataPtr->skyx->setVisible(true);
 
-    light.mutable_diffuse()->set_r(req.diffuse.r);
-    light.mutable_diffuse()->set_g(req.diffuse.g);
-    light.mutable_diffuse()->set_b(req.diffuse.b);
-    light.mutable_diffuse()->set_a(req.diffuse.a);
+    SkyX::VClouds::VClouds *vclouds =
+      scene->dataPtr->skyx->getVCloudsManager()->getVClouds();
 
-    light.set_attenuation_constant(req.attenuation_constant);
-    light.set_attenuation_linear(req.attenuation_linear);
-    light.set_attenuation_quadratic(req.attenuation_quadratic);
+    Ogre::Vector3 t = scene->dataPtr->skyxController->getTime();
+    t.x = ignition::math::clamp(req.time, 0.0, 24.0);
+    t.y = ignition::math::clamp(req.sunrise, 0.0, 24.0);
+    t.z = ignition::math::clamp(req.sunset, 0.0, 24.0);
+    scene->dataPtr->skyxController->setTime(t);
 
-    light_modify_pub_->Publish(light, true);
+    vclouds->setWindSpeed(req.wind_speed);
+    vclouds->setWindDirection(Ogre::Radian(req.wind_direction));
+    vclouds->setAmbientFactors(Ogre::Vector4(
+          req.cloud_ambient.r,
+          req.cloud_ambient.g,
+          req.cloud_ambient.b,
+          req.cloud_ambient.a));
 
+    Ogre::Vector2 wheater = vclouds->getWheater();
+    vclouds->setWheater(ignition::math::clamp(req.humidity, 0.0, 1.0),
+                        wheater.y, true);
+
+    Ogre::Vector2 wheater = vclouds->getWheater();
+    vclouds->setWheater(wheater.x,
+      ignition::math::clamp(req.mean_cloud_size, 0.0, 1.0), true);
+
+    scene->dataPtr->skyx->update(0);
     res.success = true;
   }
 
