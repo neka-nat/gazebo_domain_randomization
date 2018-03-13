@@ -33,14 +33,14 @@ namespace gazebo
 {
 
 /// \brief A plugin loaded within the gzserver on startup.
-class GazeboRosExtensionPlugin : public SystemPlugin
+class GazeboScenePlugin : public SystemPlugin
 {
 public:
   /// \brief Constructor
-  GazeboRosExtensionPlugin();
+  GazeboScenePlugin();
 
   /// \brief Destructor
-  ~GazeboRosExtensionPlugin();
+  ~GazeboScenePlugin();
 
   /// \bried Detect if sig-int shutdown signal is recieved
   void shutdownSignal();
@@ -66,7 +66,7 @@ public:
   bool setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Request &req,gazebo_ext_msgs::SetSkyProperties::Response &res);
 
   /// \brief Connect to Gazebo via its plugin interface, get a pointer to the world, start events
-  void loadGazeboRosApiPlugin(std::string world_name);
+  void loadGazeboScenePlugin(std::string world_name);
 
   // track if the desconstructor event needs to occur
   bool plugin_loaded_;
@@ -84,7 +84,7 @@ public:
   boost::shared_ptr<boost::thread> gazebo_callback_queue_thread_;
 
   gazebo::physics::WorldPtr world_;
-  gazebo::event::ConnectionPtr load_gazebo_ros_api_plugin_event_;
+  gazebo::event::ConnectionPtr load_gazebo_scene_plugin_event_;
 
   ros::ServiceServer get_sky_properties_service_;
   ros::ServiceServer set_sky_properties_service_;

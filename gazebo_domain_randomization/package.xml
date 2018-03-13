@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gazebo_domain_randomization</name> <!-- This is a meta package! -->
+  <version>0.0.1</version>
+  <description>Domain randomization package for the <a href="http://gazebosim.org/">Gazebo</a> simulator.</description>
+
+  <maintainer email="nekanat.stock@gmail.com">nekanat</maintainer>
+
+  <license>BSD</license>
+
+  <author>nekanat</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>gazebo_ext_msgs</exec_depend>
+  <exec_depend>gazebo_scene_plugins</exec_depend>
+  <exec_depend>gazebo_domain_randomizer</exec_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
