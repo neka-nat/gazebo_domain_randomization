@@ -171,37 +171,25 @@ bool GazeboScenePlugin::getSkyProperties(gazebo_msgs::GetSkyProperties::Request 
   }
   else
   {
-    Ogre::Root::getSingletonPtr()->addFrameListener(scene->dataPtr->skyx);
-    scene->dataPtr->skyx->update(0);
-
-    scene->dataPtr->skyx->setVisible(true);
-
     SkyX::VClouds::VClouds *vclouds =
       scene->dataPtr->skyx->getVCloudsManager()->getVClouds();
 
     Ogre::Vector3 t = scene->dataPtr->skyxController->getTime();
-    t.x = ignition::math::clamp(req.time, 0.0, 24.0);
-    t.y = ignition::math::clamp(req.sunrise, 0.0, 24.0);
-    t.z = ignition::math::clamp(req.sunset, 0.0, 24.0);
-    scene->dataPtr->skyxController->setTime(t);
-
-    vclouds->setWindSpeed(req.wind_speed);
-    vclouds->setWindDirection(Ogre::Radian(req.wind_direction));
-    vclouds->setAmbientFactors(Ogre::Vector4(
-          req.cloud_ambient.r,
-          req.cloud_ambient.g,
-          req.cloud_ambient.b,
-          req.cloud_ambient.a));
-
-    Ogre::Vector2 wheater = vclouds->getWheater();
-    vclouds->setWheater(ignition::math::clamp(req.humidity, 0.0, 1.0),
-                        wheater.y, true);
+    res.time = t.x;
+    res.sunrise = t.y;
+    res.sunset = t.z;
+ 
+    res.wind_speed = vclouds->getWindSpeed(req.wind_speed);
+    res.wind_direction = vclouds->getWindDirection(req.wind_direction);
+    Ogre::Vector4 vec4 = vclouds->setAmbientFactors();
+    res.cloud_ambient.r = vec4,x;
+    res.cloud_ambient.g = vec4.y;
+    res.cloud_ambient.b = vec4.z;
+    res.cloud_ambient.z = vec4.w;
 
     Ogre::Vector2 wheater = vclouds->getWheater();
-    vclouds->setWheater(wheater.x,
-      ignition::math::clamp(req.mean_cloud_size, 0.0, 1.0), true);
-
-    scene->dataPtr->skyx->update(0);
+    res.humididy = wheater.x
+    res.mean_cloud_size = wheater.y
     res.success = true;
   }
 
@@ -230,26 +218,21 @@ bool GazeboScenePlugin::setSkyProperties(gazebo_msgs::SetSkyProperties::Request 
     SkyX::VClouds::VClouds *vclouds =
       scene->dataPtr->skyx->getVCloudsManager()->getVClouds();
 
-    Ogre::Vector3 t = scene->dataPtr->skyxController->getTime();
+    Ogre::Vector3 t;
     t.x = ignition::math::clamp(req.time, 0.0, 24.0);
     t.y = ignition::math::clamp(req.sunrise, 0.0, 24.0);
     t.z = ignition::math::clamp(req.sunset, 0.0, 24.0);
     scene->dataPtr->skyxController->setTime(t);
 
     vclouds->setWindSpeed(req.wind_speed);
-    vclouds->setWindDirection(Ogre::Radian(req.wind_direction));
+    vclouds->setWindDirection(req.wind_direction);
     vclouds->setAmbientFactors(Ogre::Vector4(
           req.cloud_ambient.r,
           req.cloud_ambient.g,
           req.cloud_ambient.b,
           req.cloud_ambient.a));
 
-    Ogre::Vector2 wheater = vclouds->getWheater();
     vclouds->setWheater(ignition::math::clamp(req.humidity, 0.0, 1.0),
-                        wheater.y, true);
-
-    Ogre::Vector2 wheater = vclouds->getWheater();
-    vclouds->setWheater(wheater.x,
       ignition::math::clamp(req.mean_cloud_size, 0.0, 1.0), true);
 
     scene->dataPtr->skyx->update(0);
