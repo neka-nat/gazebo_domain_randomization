@@ -20,7 +20,7 @@ class LightRandomizer:
         try:
             res = self._set_light(req)
             if not res.success:
-                rospy.logwarn(res.statuc_message)
+                rospy.logwarn(res.status_message)
         except rospy.ServiceException, e:
             rospy.logerr("Service call failed: %s" % e)
 
