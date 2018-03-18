@@ -29,6 +29,15 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/algorithm/string.hpp>
 
+namespace SkyX
+{
+  class SkyX;
+  namespace VClouds
+  {
+    class VClouds;
+  }
+}
+
 namespace gazebo
 {
 

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>gazebo_domain_ramdomizer</name>
+  <name>gazebo_domain_randomizer</name>
   <version>0.0.1</version>
   <description>
         Gazebo domain randomization nodes.

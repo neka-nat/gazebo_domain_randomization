@@ -1,6 +1,9 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/gazebo_config.h>
-#include <gazebo_scene_plugin/gazebo_scene_plugin.h>
+#include <gazebo/rendering/rendering.hh>
+#include <gazebo/rendering/ogre_gazebo.h>
+#include "skyx/include/SkyX.h"
+#include "gazebo_scene_plugin/gazebo_scene_plugin.h"
 
 namespace gazebo
 {
@@ -141,30 +144,30 @@ void GazeboScenePlugin::advertiseServices()
   // Advertise more services on the custom queue
   std::string get_sky_properties_service_name("get_sky_properties");
   ros::AdvertiseServiceOptions get_sky_properties_aso =
-    ros::AdvertiseServiceOptions::create<gazebo_msgs::GetSkyProperties>(
-                                                                        get_model_properties_service_name,
-                                                                        boost::bind(&GazeboScenePlugin::getSkyProperties,this,_1,_2),
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetSkyProperties>(
+                                                                            get_sky_properties_service_name,
+                                                                            boost::bind(&GazeboScenePlugin::getSkyProperties,this,_1,_2),
                                                                         ros::VoidPtr(), &gazebo_queue_);
-  get_model_properties_service_ = nh_->advertiseService(get_sky_properties_aso);
+  get_sky_properties_service_ = nh_->advertiseService(get_sky_properties_aso);
 
   // Advertise more services on the custom queue
   std::string set_sky_properties_service_name("set_sky_properties");
   ros::AdvertiseServiceOptions set_sky_properties_aso =
-    ros::AdvertiseServiceOptions::create<gazebo_msgs::SetSkyProperties>(
-                                                                        set_sky_properties_service_name,
-                                                                        boost::bind(&GazeboScenePlugin::setSkyProperties,this,_1,_2),
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::SetSkyProperties>(
+                                                                            set_sky_properties_service_name,
+                                                                            boost::bind(&GazeboScenePlugin::setSkyProperties,this,_1,_2),
                                                                         ros::VoidPtr(), &gazebo_queue_);
-  set_light_properties_service_ = nh_->advertiseService(set_sky_properties_aso);
+  set_sky_properties_service_ = nh_->advertiseService(set_sky_properties_aso);
 }
 
-bool GazeboScenePlugin::getSkyProperties(gazebo_msgs::GetSkyProperties::Request &req,
-                                         gazebo_msgs::GetSkyProperties::Response &res)
+bool GazeboScenePlugin::getSkyProperties(gazebo_ext_msgs::GetSkyProperties::Request &req,
+                                         gazebo_ext_msgs::GetSkyProperties::Response &res)
 {
   // Get scene pointer
   rendering::ScenePtr scene = rendering::get_scene();
 
   // Wait until the scene is initialized.
-  if (!scene || !scene->Initialized() || !scene->dataPtr->skyx)
+  if (!scene || !scene->Initialized() || !scene->GetSkyX())
   {
     res.success = false;
     res.status_message = "getSkyProperties: Could not access the scene!";
@@ -172,60 +175,64 @@ bool GazeboScenePlugin::getSkyProperties(gazebo_msgs::GetSkyProperties::Request 
   else
   {
     SkyX::VClouds::VClouds *vclouds =
-      scene->dataPtr->skyx->getVCloudsManager()->getVClouds();
+      scene->GetSkyX()->getVCloudsManager()->getVClouds();
+    SkyX::BasicController *controller =
+      dynamic_cast<SkyX::BasicController *>(scene->GetSkyX()->getController());
 
-    Ogre::Vector3 t = scene->dataPtr->skyxController->getTime();
+    Ogre::Vector3 t = controller->getTime();
     res.time = t.x;
     res.sunrise = t.y;
     res.sunset = t.z;
  
-    res.wind_speed = vclouds->getWindSpeed(req.wind_speed);
-    res.wind_direction = vclouds->getWindDirection(req.wind_direction);
-    Ogre::Vector4 vec4 = vclouds->setAmbientFactors();
-    res.cloud_ambient.r = vec4,x;
+    res.wind_speed = vclouds->getWindSpeed();
+    res.wind_direction = vclouds->getWindDirection().valueRadians();
+    Ogre::Vector4 vec4 = vclouds->getAmbientFactors();
+    res.cloud_ambient.r = vec4.x;
     res.cloud_ambient.g = vec4.y;
     res.cloud_ambient.b = vec4.z;
-    res.cloud_ambient.z = vec4.w;
+    res.cloud_ambient.a = vec4.w;
 
     Ogre::Vector2 wheater = vclouds->getWheater();
-    res.humididy = wheater.x
-    res.mean_cloud_size = wheater.y
+    res.humidity = wheater.x;
+    res.mean_cloud_size = wheater.y;
     res.success = true;
   }
 
   return true;
 }
 
-bool GazeboScenePlugin::setSkyProperties(gazebo_msgs::SetSkyProperties::Request &req,
-                                         gazebo_msgs::SetSkyProperties::Response &res)
+bool GazeboScenePlugin::setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Request &req,
+                                         gazebo_ext_msgs::SetSkyProperties::Response &res)
 {
   // Get scene pointer
   rendering::ScenePtr scene = rendering::get_scene();
 
   // Wait until the scene is initialized.
-  if (!scene || !scene->Initialized() || !scene->dataPtr->skyx)
+  if (!scene || !scene->Initialized() || !scene->GetSkyX())
   {
     res.success = false;
     res.status_message = "setSkyProperties: Could not access the scene!";
   }
   else
   {
-    Ogre::Root::getSingletonPtr()->addFrameListener(scene->dataPtr->skyx);
-    scene->dataPtr->skyx->update(0);
+    Ogre::Root::getSingletonPtr()->addFrameListener(scene->GetSkyX());
+    scene->GetSkyX()->update(0);
 
-    scene->dataPtr->skyx->setVisible(true);
+    scene->GetSkyX()->setVisible(true);
 
     SkyX::VClouds::VClouds *vclouds =
-      scene->dataPtr->skyx->getVCloudsManager()->getVClouds();
+      scene->GetSkyX()->getVCloudsManager()->getVClouds();
+    SkyX::BasicController *controller =
+      dynamic_cast<SkyX::BasicController *>(scene->GetSkyX()->getController());
 
     Ogre::Vector3 t;
     t.x = ignition::math::clamp(req.time, 0.0, 24.0);
     t.y = ignition::math::clamp(req.sunrise, 0.0, 24.0);
     t.z = ignition::math::clamp(req.sunset, 0.0, 24.0);
-    scene->dataPtr->skyxController->setTime(t);
+    controller->setTime(t);
 
     vclouds->setWindSpeed(req.wind_speed);
-    vclouds->setWindDirection(req.wind_direction);
+    vclouds->setWindDirection(Ogre::Radian(req.wind_direction));
     vclouds->setAmbientFactors(Ogre::Vector4(
           req.cloud_ambient.r,
           req.cloud_ambient.g,
@@ -235,7 +242,7 @@ bool GazeboScenePlugin::setSkyProperties(gazebo_msgs::SetSkyProperties::Request 
     vclouds->setWheater(ignition::math::clamp(req.humidity, 0.0, 1.0),
       ignition::math::clamp(req.mean_cloud_size, 0.0, 1.0), true);
 
-    scene->dataPtr->skyx->update(0);
+    scene->GetSkyX()->update(0);
     res.success = true;
   }
 
