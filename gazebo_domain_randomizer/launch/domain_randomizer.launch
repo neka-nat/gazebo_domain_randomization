@@ -1,6 +1,8 @@
 <launch>
+  <arg name="model_name" />
   <group ns="randomizers">
     <node pkg="gazebo_domain_randomizer" name="light_randomizer" type="light_randomizer" output="screen" />
     <node pkg="gazebo_domain_randomizer" name="shapes_randomizer" type="shapes_randomizer" output="screen" />
+    <node pkg="gazebo_domain_randomizer" name="link_properties_randomizer" type="link_properties_randomizer" args="-m $(arg model_name)" output="screen" />
   </group>
 </launch>

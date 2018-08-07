@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+import numpy as np
+import rospy
+from gazebo_msgs.srv import GetModelProperties, GetModelPropertiesRequest
+from gazebo_msgs.srv import GetLinkProperties, GetLinkPropertiesRequest
+from gazebo_msgs.srv import SetLinkProperties, SetLinkPropertiesRequest
+
+class LinkPropertiesRandomizer:
+    def __init__(self, model_name, mass_ratio_range=[0.5, 3.0], gazebo_ns='/gazebo'):
+        rospy.init_node("link_properties_randomizer")
+        self._model_name = model_name
+        self._mass_ratio_range = mass_ratio_range
+        rospy.wait_for_service(gazebo_ns + '/get_model_properties')
+        get_model_prop = rospy.ServiceProxy(gazebo_ns + '/get_model_properties', GetModelProperties)
+        try:
+	    res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
+            if not res.success:
+	        rospy.logwarn(res.status_message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s" % e)
+        link_names = ["%s::%s" % (model_name, b) for b in res.body_names]
+        self._get_link_prop = rospy.ServiceProxy(gazebo_ns + '/get_link_properties', GetLinkProperties)
+        self._set_link_prop = rospy.ServiceProxy(gazebo_ns + '/set_link_properties', SetLinkProperties)
+        self._default_props = {}
+        for l in link_names:
+            try:
+                self._default_props[l] = self._get_link_prop(GetLinkPropertiesRequest(link_name=l))
+            except rospy.ServiceException, e:
+                rospy.logerr("Service call failed: %s" % e)
+    def timer_callback(self, event):
+        req = SetLinkPropertiesRequest()
+        link_name = np.random.choice(self._default_props.keys())
+        r_mass = np.random.uniform(*self._mass_ratio_range)
+        req.link_name = link_name
+        req.com = self._default_props[link_name].com
+        req.gravity_mode = self._default_props[link_name].gravity_mode
+        req.mass = self._default_props[link_name].mass * r_mass
+        req.ixx = self._default_props[link_name].ixx
+        req.ixy = self._default_props[link_name].ixy
+        req.iyy = self._default_props[link_name].iyy
+        req.iyz = self._default_props[link_name].iyz
+        req.izz = self._default_props[link_name].izz
+        try:
+            res = self._set_link_prop(req)
+            if not res.success:
+                rospy.logwarn(res.status_message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s" % e)
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Link properties randomizer')
+    parser.add_argument('-m', '--model_name', type=str, default='', help='Model name.')
+    parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    args = parser.parse_args(rospy.myargv()[1:])
+    randomizer = LinkPropertiesRandomizer(args.model_name)
+    rospy.Timer(rospy.Duration(args.duration), randomizer.timer_callback)
+    rospy.spin()
