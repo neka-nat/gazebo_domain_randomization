@@ -5,10 +5,10 @@ from std_msgs.msg import ColorRGBA
 from gazebo_msgs.srv import SetLightProperties, SetLightPropertiesRequest
 
 class LightRandomizer:
-    def __init__(self, light_name='sun'):
+    def __init__(self, light_name='sun', gazebo_ns='/gazebo'):
         rospy.init_node("light_randomizer")
         self._light_name = light_name
-        self._set_light = rospy.ServiceProxy('gazebo/set_light_properties', SetLightProperties)
+        self._set_light = rospy.ServiceProxy(gazebo_ns + '/set_light_properties', SetLightProperties)
     def timer_callback(self, event):
         req = SetLightPropertiesRequest()
         req.light_name = self._light_name
@@ -16,7 +16,7 @@ class LightRandomizer:
         req.attenuation_constant = np.random.random()
         req.attenuation_linear = np.random.random()
         req.attenuation_quadratic = np.random.random()
-        rospy.loginfo("Set light parameter: " + str(req))
+        rospy.logdebug("Set light parameter: " + str(req))
         try:
             res = self._set_light(req)
             if not res.success:
@@ -26,7 +26,8 @@ class LightRandomizer:
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) >= 2:
+    myargv = rospy.myargv(argv=sys.argv)
+    if len(myargv) >= 2:
         duration = float(sys.argv[1])
     else:
         duration = 1

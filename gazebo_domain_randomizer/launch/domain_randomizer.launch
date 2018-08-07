@@ -1,6 +1,6 @@
 <launch>
   <group ns="randomizers">
-    <node pkg="gazebo_domain_randomizer" name="light_randomizer" type="light_randomizer"/>
-    <node pkg="gazebo_domain_randomizer" name="shapes_randomizer" type="shapes_randomizer"/>
+    <node pkg="gazebo_domain_randomizer" name="light_randomizer" type="light_randomizer" output="screen" />
+    <node pkg="gazebo_domain_randomizer" name="shapes_randomizer" type="shapes_randomizer" output="screen" />
   </group>
 </launch>

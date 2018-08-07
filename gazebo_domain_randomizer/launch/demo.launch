@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+  <include file="$(find gazebo_domain_randomizer)/launch/domain_randomizer.launch" />
+</launch>
