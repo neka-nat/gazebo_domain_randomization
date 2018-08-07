@@ -7,5 +7,5 @@ https://arxiv.org/abs/1703.06907
 ## Run
 
 ```
-roslaunch gazebo_domain_randomizer domain_randomizer.launch
+roslaunch gazebo_domain_randomizer demo.launch
 ```
