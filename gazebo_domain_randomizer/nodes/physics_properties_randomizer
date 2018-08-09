@@ -19,7 +19,7 @@ class PhysicsPropertiesRandomizer:
             rospy.logerr("Service call failed: %s" % e)
         self._default_props = res
         self._set_phys_prop = rospy.ServiceProxy(gazebo_ns + '/set_physics_properties', SetPhysicsProperties)
-    def timer_callback(self, event):
+    def callback(self, event):
         req = SetPhysicsPropertiesRequest()
         r_gravity = np.random.uniform(*self._gravity_ratio_range)
         req.time_step = self._default_props.time_step
@@ -36,9 +36,16 @@ class PhysicsPropertiesRandomizer:
 
 if __name__ == "__main__":
     import argparse
+    from std_msgs.msg import Empty
     parser = argparse.ArgumentParser(description='Physics properties randomizer')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
     randomizer = PhysicsPropertiesRandomizer()
-    rospy.Timer(rospy.Duration(args.duration), randomizer.timer_callback)
+    if args.event_mode == 'timer':
+        rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
+    elif args.event_mode == 'trigger':
+        rospy.Subscriber('randomizer/trigger', Empty, randomizer.callback)
+    else:
+        raise ValueError('Unknown event_mode: %s' % args.event_mode)
     rospy.spin()

@@ -10,6 +10,18 @@ https://arxiv.org/abs/1703.06907
 roslaunch gazebo_domain_randomizer demo.launch
 ```
 
+If you want to randomize with external trigger, execute with the following option.
+
+```
+roslaunch gazebo_domain_randomizer demo.launch event_mode:='trigger'
+```
+
+And please execute the following command on another console.
+
+```
+rostopic pub /randomizers/randomizer/trigger std_msgs/Empty "{}"  -r 1.0
+```
+
 ## Randomizers
 
 ### Light randomizer

@@ -1,8 +1,10 @@
 <launch>
+  <arg name="event_mode" default="timer" />
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find gazebo_domain_randomizer)/worlds/demo.world" />
   </include>
   <include file="$(find gazebo_domain_randomizer)/launch/domain_randomizer.launch">
     <arg name="model_name" default="double_pendulum_with_base" />
+    <arg name="event_mode" default="$(arg event_mode)" />
   </include>
 </launch>

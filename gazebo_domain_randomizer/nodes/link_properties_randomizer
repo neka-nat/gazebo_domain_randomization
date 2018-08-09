@@ -27,7 +27,7 @@ class LinkPropertiesRandomizer:
                 self._default_props[l] = self._get_link_prop(GetLinkPropertiesRequest(link_name=l))
             except rospy.ServiceException, e:
                 rospy.logerr("Service call failed: %s" % e)
-    def timer_callback(self, event):
+    def callback(self, event):
         req = SetLinkPropertiesRequest()
         link_name = np.random.choice(self._default_props.keys())
         r_mass = np.random.uniform(*self._mass_ratio_range)
@@ -49,10 +49,17 @@ class LinkPropertiesRandomizer:
 
 if __name__ == "__main__":
     import argparse
+    from std_msgs.msg import Empty
     parser = argparse.ArgumentParser(description='Link properties randomizer')
     parser.add_argument('-m', '--model_name', type=str, default='', help='Model name.')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
     randomizer = LinkPropertiesRandomizer(args.model_name)
-    rospy.Timer(rospy.Duration(args.duration), randomizer.timer_callback)
+    if args.event_mode == 'timer':
+        rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
+    elif args.event_mode == 'trigger':
+        rospy.Subscriber('randomizer/trigger', Empty, randomizer.callback)
+    else:
+        raise ValueError('Unknown event_mode: %s' % args.event_mode)
     rospy.spin()

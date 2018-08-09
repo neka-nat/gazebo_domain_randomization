@@ -9,7 +9,7 @@ class LightRandomizer:
         rospy.init_node("light_randomizer")
         self._light_name = light_name
         self._set_light = rospy.ServiceProxy(gazebo_ns + '/set_light_properties', SetLightProperties)
-    def timer_callback(self, event):
+    def callback(self, event):
         req = SetLightPropertiesRequest()
         req.light_name = self._light_name
         req.diffuse = ColorRGBA(*np.random.random(4))
@@ -25,12 +25,17 @@ class LightRandomizer:
             rospy.logerr("Service call failed: %s" % e)
 
 if __name__ == "__main__":
-    import sys
-    myargv = rospy.myargv(argv=sys.argv)
-    if len(myargv) >= 2:
-        duration = float(sys.argv[1])
-    else:
-        duration = 1
+    import argparse
+    from std_msgs.msg import Empty
+    parser = argparse.ArgumentParser(description='Light randomizer')
+    parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
+    args = parser.parse_args(rospy.myargv()[1:])
     randomizer = LightRandomizer()
-    rospy.Timer(rospy.Duration(duration), randomizer.timer_callback)
+    if args.event_mode == 'timer':
+        rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
+    elif args.event_mode == 'trigger':
+        rospy.Subscriber('randomizer/trigger', Empty, randomizer.callback)
+    else:
+        raise ValueError('Unknown event_mode: %s' % args.event_mode)
     rospy.spin()
