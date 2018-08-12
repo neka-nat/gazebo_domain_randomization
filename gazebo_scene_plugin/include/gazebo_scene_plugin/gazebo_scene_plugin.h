@@ -60,7 +60,7 @@ public:
   /// Capitalized per Gazebo cpp style guidelines
   /// \param _argc Number of command line arguments.
   /// \param _argv Array of command line arguments.
-  void Load(int argc, char** argv);
+  virtual void Load(int argc, char** argv);
 
   /// \brief ros queue thread for this node
   void gazeboQueueThread();

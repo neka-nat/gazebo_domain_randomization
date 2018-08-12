@@ -31,5 +31,8 @@ This randomizer randomly changes the properties of the light source given by its
 This randomizer randomly generates objects of various shapes in the world space.
 The generated objects are not collision objects.
 
+### Sky randomizer
+This randomizer randomly changes the properties of sky in the world.
+
 ### Link properties randomizer
 This randomizer randomly changes mass of the link given by the model name.
