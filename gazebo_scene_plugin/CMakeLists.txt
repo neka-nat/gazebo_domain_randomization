@@ -21,6 +21,7 @@ catkin_package(
   CATKIN_DEPENDS
     roslib
     roscpp
+    gazebo_ros
     geometry_msgs
     std_srvs
     std_msgs

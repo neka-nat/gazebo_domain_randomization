@@ -74,9 +74,6 @@ public:
   /// \brief
   bool setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Request &req,gazebo_ext_msgs::SetSkyProperties::Response &res);
 
-  /// \brief Connect to Gazebo via its plugin interface, get a pointer to the world, start events
-  void loadGazeboScenePlugin(std::string world_name);
-
   // track if the desconstructor event needs to occur
   bool plugin_loaded_;
 
@@ -86,14 +83,9 @@ public:
 
   std::string robot_namespace_;
 
-  gazebo::transport::NodePtr gazebonode_;
-
   boost::shared_ptr<ros::NodeHandle> nh_;
   ros::CallbackQueue gazebo_queue_;
   boost::shared_ptr<boost::thread> gazebo_callback_queue_thread_;
-
-  gazebo::physics::WorldPtr world_;
-  gazebo::event::ConnectionPtr load_gazebo_scene_plugin_event_;
 
   ros::ServiceServer get_sky_properties_service_;
   ros::ServiceServer set_sky_properties_service_;

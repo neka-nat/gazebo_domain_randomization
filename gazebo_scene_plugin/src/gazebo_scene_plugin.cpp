@@ -27,27 +27,23 @@ GazeboScenePlugin::~GazeboScenePlugin()
   // Don't attempt to unload this plugin if it was never loaded in the Load() function
   if(!plugin_loaded_)
   {
-    ROS_DEBUG_STREAM_NAMED("scene_plugin","Deconstructor skipped because never loaded");
+    ROS_DEBUG_STREAM_NAMED("scene_plugin", "Deconstructor skipped because never loaded");
     return;
   }
 
-  // Disconnect slots
-  load_gazebo_scene_plugin_event_.reset();
-  ROS_DEBUG_STREAM_NAMED("scene_plugin","Slots disconnected");
-
   // Stop the multi threaded ROS spinner
   async_ros_spin_->stop();
-  ROS_DEBUG_STREAM_NAMED("scene_plugin","Async ROS Spin Stopped");
+  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Async ROS Spin Stopped");
 
   // Shutdown the ROS node
   nh_->shutdown();
-  ROS_DEBUG_STREAM_NAMED("scene_plugin","Node Handle Shutdown");
+  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Node Handle Shutdown");
 
   // Shutdown ROS queue
   gazebo_callback_queue_thread_->join();
-  ROS_DEBUG_STREAM_NAMED("scene_plugin","Callback Queue Joined");
+  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Callback Queue Joined");
 
-  ROS_DEBUG_STREAM_NAMED("scene_plugin","Unloaded");
+  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Unloaded");
 }
 
 void GazeboScenePlugin::shutdownSignal()
@@ -65,7 +61,7 @@ void GazeboScenePlugin::Load(int argc, char** argv)
 
   // setup ros related
   if (!ros::isInitialized())
-    ros::init(argc,argv,"gazebo",ros::init_options::NoSigintHandler);
+    ros::init(argc,argv, "gazebo", ros::init_options::NoSigintHandler);
   else
     ROS_ERROR_NAMED("extension_plugin", "Something other than this gazebo_ros_api plugin started ros::init(...), command line arguments may not be parsed properly.");
 
@@ -92,41 +88,10 @@ void GazeboScenePlugin::Load(int argc, char** argv)
   /// \brief setup custom callback queue
   gazebo_callback_queue_thread_.reset(new boost::thread( &GazeboScenePlugin::gazeboQueueThread, this) );
 
-  // below needs the world to be created first
-  load_gazebo_scene_plugin_event_ = gazebo::event::Events::ConnectWorldCreated(boost::bind(&GazeboScenePlugin::loadGazeboScenePlugin,this,_1));
+  advertiseServices();
 
   plugin_loaded_ = true;
   ROS_INFO_NAMED("extension_plugin", "Finished loading Gazebo ROS API Plugin.");
-}
-
-void GazeboScenePlugin::loadGazeboScenePlugin(std::string world_name)
-{
-  // make sure things are only called once
-  lock_.lock();
-  if (world_created_)
-  {
-    lock_.unlock();
-    return;
-  }
-
-  // set flag to true and load this plugin
-  world_created_ = true;
-  lock_.unlock();
-
-  world_ = gazebo::physics::get_world(world_name);
-  if (!world_)
-  {
-    //ROS_ERROR_NAMED("api_plugin", "world name: [%s]",world->GetName().c_str());
-    // connect helper function to signal for scheduling torque/forces, etc
-    ROS_FATAL_NAMED("extension_plugin", "cannot load gazebo ros api server plugin, physics::get_world() fails to return world");
-    return;
-  }
-
-  gazebonode_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
-  gazebonode_->Init(world_name);
-
-  /// \brief advertise all services
-  advertiseServices();
 }
 
 void GazeboScenePlugin::gazeboQueueThread()
@@ -147,7 +112,7 @@ void GazeboScenePlugin::advertiseServices()
     ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetSkyProperties>(
                                                                             get_sky_properties_service_name,
                                                                             boost::bind(&GazeboScenePlugin::getSkyProperties,this,_1,_2),
-                                                                        ros::VoidPtr(), &gazebo_queue_);
+                                                                            ros::VoidPtr(), &gazebo_queue_);
   get_sky_properties_service_ = nh_->advertiseService(get_sky_properties_aso);
 
   // Advertise more services on the custom queue
@@ -156,7 +121,7 @@ void GazeboScenePlugin::advertiseServices()
     ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::SetSkyProperties>(
                                                                             set_sky_properties_service_name,
                                                                             boost::bind(&GazeboScenePlugin::setSkyProperties,this,_1,_2),
-                                                                        ros::VoidPtr(), &gazebo_queue_);
+                                                                            ros::VoidPtr(), &gazebo_queue_);
   set_sky_properties_service_ = nh_->advertiseService(set_sky_properties_aso);
 }
 
