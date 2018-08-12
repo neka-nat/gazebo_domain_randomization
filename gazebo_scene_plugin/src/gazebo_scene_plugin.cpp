@@ -63,7 +63,7 @@ void GazeboScenePlugin::Load(int argc, char** argv)
   if (!ros::isInitialized())
     ros::init(argc,argv, "gazebo", ros::init_options::NoSigintHandler);
   else
-    ROS_ERROR_NAMED("extension_plugin", "Something other than this gazebo_ros_api plugin started ros::init(...), command line arguments may not be parsed properly.");
+    ROS_WARN_NAMED("extension_plugin", "Something other than this gazebo_scene plugin started ros::init(...), command line arguments may not be parsed properly.");
 
   // check if the ros master is available - required
   while(!ros::master::check())
