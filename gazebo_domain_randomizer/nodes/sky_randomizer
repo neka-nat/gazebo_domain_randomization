@@ -6,7 +6,6 @@ from gazebo_ext_msgs.srv import SetSkyProperties, SetSkyPropertiesRequest
 
 class SkyRandomizer:
     def __init__(self,  gazebo_ns='/gazebo_gui'):
-        rospy.init_node("sky_randomizer")
         rospy.wait_for_service(gazebo_ns + '/get_sky_properties')
         get_sky = rospy.ServiceProxy(gazebo_ns + '/get_sky_properties', GetSkyProperties)
         self._set_sky = rospy.ServiceProxy(gazebo_ns + '/set_sky_properties', SetSkyProperties)
@@ -43,6 +42,8 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
+
+    rospy.init_node("sky_randomizer")
     randomizer = SkyRandomizer()
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)

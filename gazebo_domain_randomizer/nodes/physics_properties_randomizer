@@ -6,8 +6,7 @@ from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties, SetPhysicsPropertiesRequest
 
 class PhysicsPropertiesRandomizer:
-    def __init__(self, gravity_ratio_range=[0.5, 3.0], gazebo_ns='/gazebo'):
-        rospy.init_node("physics_properties_randomizer")
+    def __init__(self, gravity_ratio_range, gazebo_ns='/gazebo'):
         self._gravity_ratio_range = gravity_ratio_range
         rospy.wait_for_service(gazebo_ns + '/get_physics_properties')
         get_phys_prop = rospy.ServiceProxy(gazebo_ns + '/get_physics_properties', GetPhysicsProperties)
@@ -41,7 +40,11 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
-    randomizer = PhysicsPropertiesRandomizer()
+
+    rospy.init_node("physics_properties_randomizer")
+    gravity_ratio_range = rospy.get_param("~gravity_ratio_range", {'min': 0.8, 'max': 1.2})
+    rospy.loginfo("Load param gravity_ratio_range: " + str(gravity_ratio_range))
+    randomizer = PhysicsPropertiesRandomizer([gravity_ratio_range['min'], gravity_ratio_range['max']])
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':

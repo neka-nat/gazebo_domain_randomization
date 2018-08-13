@@ -6,8 +6,7 @@ from gazebo_msgs.srv import GetLinkProperties, GetLinkPropertiesRequest
 from gazebo_msgs.srv import SetLinkProperties, SetLinkPropertiesRequest
 
 class LinkPropertiesRandomizer:
-    def __init__(self, model_name, mass_ratio_range=[0.5, 3.0], gazebo_ns='/gazebo'):
-        rospy.init_node("link_properties_randomizer")
+    def __init__(self, model_name, mass_ratio_range, gazebo_ns='/gazebo'):
         self._model_name = model_name
         self._mass_ratio_range = mass_ratio_range
         rospy.wait_for_service(gazebo_ns + '/get_model_properties')
@@ -55,7 +54,11 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
-    randomizer = LinkPropertiesRandomizer(args.model_name)
+
+    rospy.init_node("link_properties_randomizer")
+    mass_ratio_range = rospy.get_param('~mass_ratio_range', {'min': 0.8, 'max': 1.2})
+    rospy.loginfo("Load param mass_ratio_range: " + str(mass_ratio_range))
+    randomizer = LinkPropertiesRandomizer(args.model_name, [mass_ratio_range['min'], mass_ratio_range['max']])
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':

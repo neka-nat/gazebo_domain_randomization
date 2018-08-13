@@ -92,7 +92,6 @@ class ShapesRandomizer:
                  size_range=[0.1, 0.5],
                  spawn_range=[[-2.0, -2.0, 0.0], [2.0, 2.0, 3.0]],
                  gazebo_ns='/gazebo'):
-        rospy.init_node("shapes_randomizer")
         self._sdf_temp = Template(_obj_sdf)
         self._spawn_model = rospy.ServiceProxy(gazebo_ns + '/spawn_sdf_model', SpawnModel)
         self._delete_model = rospy.ServiceProxy(gazebo_ns + '/delete_model', DeleteModel)
@@ -142,6 +141,8 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
+
+    rospy.init_node("shapes_randomizer")
     randomizer = ShapesRandomizer()
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
