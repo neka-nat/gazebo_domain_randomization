@@ -4,6 +4,13 @@
     <arg name="world_name" value="$(find gazebo_domain_randomizer)/worlds/demo.world" />
     <arg name="gui" value="false" />
   </include>
+  <rosparam param="/randomizers/link_visual_properties_randomizer/link_visuals">
+    ["double_pendulum_with_base::upper_link::vis_upper_joint",
+     "double_pendulum_with_base::upper_link::vis_lower_joint",
+     "double_pendulum_with_base::upper_link::vis_cylinder",
+     "double_pendulum_with_base::lower_link::vis_lower_joint",
+     "double_pendulum_with_base::lower_link::vis_cylinder"]
+  </rosparam>
   <node name="gazebo_gui" pkg="gazebo_domain_randomizer" type="gzclient" respawn="false" output="screen" />
   <include file="$(find gazebo_domain_randomizer)/launch/domain_randomizer.launch">
     <arg name="model_name" default="double_pendulum_with_base" />

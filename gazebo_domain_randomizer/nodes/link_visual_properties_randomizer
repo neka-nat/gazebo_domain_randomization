@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+import numpy as np
+import rospy
+from std_msgs.msg import ColorRGBA
+from gazebo_ext_msgs.srv import SetLinkVisualProperties, SetLinkVisualPropertiesRequest
+
+class LinkVisualPropertiesRandomizer:
+    def __init__(self, visuals, color_range, gazebo_ns='/gazebo_gui'):
+        self._visuals = visuals
+        self._color_range = color_range
+        self._set_link_vis = rospy.ServiceProxy(gazebo_ns + '/set_link_visual_properties', SetLinkVisualProperties)
+
+    def callback(self, event):
+        if len(self._visuals) == 0:
+            return
+        req = SetLinkVisualPropertiesRequest()
+        req.link_name = np.random.choice(self._visuals)
+        req.ambient= ColorRGBA(*[np.random.uniform(self._color_range['r']['min'], self._color_range['r']['max']),
+                                 np.random.uniform(self._color_range['g']['min'], self._color_range['g']['max']),
+                                 np.random.uniform(self._color_range['b']['min'], self._color_range['b']['max']),
+                                 1.0])
+        req.diffuse= ColorRGBA(*[np.random.uniform(self._color_range['r']['min'], self._color_range['r']['max']),
+                                 np.random.uniform(self._color_range['g']['min'], self._color_range['g']['max']),
+                                 np.random.uniform(self._color_range['b']['min'], self._color_range['b']['max']),
+                                 1.0])
+        req.emissive= ColorRGBA(*[np.random.uniform(self._color_range['r']['min'], self._color_range['r']['max']),
+                                  np.random.uniform(self._color_range['g']['min'], self._color_range['g']['max']),
+                                  np.random.uniform(self._color_range['b']['min'], self._color_range['b']['max']),
+                                  1.0])
+        try:
+            res = self._set_link_vis(req)
+            if not res.success:
+                rospy.logwarn(res.status_message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s" % e)
+
+if __name__ == "__main__":
+    import argparse
+    from std_msgs.msg import Empty
+    parser = argparse.ArgumentParser(description='Link visual properties randomizer')
+    parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
+    args = parser.parse_args(rospy.myargv()[1:])
+
+    rospy.init_node("link_visual_properties_randomizer")
+    visuals = rospy.get_param("~link_visuals", [])
+    rospy.loginfo("Load link visuals: " + str(visuals))
+    color_range = {}
+    color_range['r'] = rospy.get_param("~color_range/r", {'min': 0.0, 'max': 1.0})
+    color_range['g'] = rospy.get_param("~color_range/g", {'min': 0.0, 'max': 1.0})
+    color_range['b'] = rospy.get_param("~color_range/b", {'min': 0.0, 'max': 1.0})
+    rospy.loginfo("Load param color_range: " + str(color_range))
+    randomizer = LinkVisualPropertiesRandomizer(visuals, color_range)
+    if args.event_mode == 'timer':
+        rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
+    elif args.event_mode == 'trigger':
+        rospy.Subscriber('randomizer/trigger', Empty, randomizer.callback)
+    else:
+        raise ValueError('Unknown event_mode: %s' % args.event_mode)
+    rospy.spin()
