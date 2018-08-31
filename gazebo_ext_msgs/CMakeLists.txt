@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(DIRECTORY srv FILES
   SetSkyProperties.srv
   GetSkyProperties.srv
+  SetLinkVisualProperties.srv
+  GetLinkVisualProperties.srv
   )
 
 generate_messages(DEPENDENCIES

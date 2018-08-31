@@ -25,6 +25,8 @@
 
 #include "gazebo_ext_msgs/SetSkyProperties.h"
 #include "gazebo_ext_msgs/GetSkyProperties.h"
+#include "gazebo_ext_msgs/GetLinkVisualProperties.h"
+#include "gazebo_ext_msgs/SetLinkVisualProperties.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/algorithm/string.hpp>
@@ -74,6 +76,12 @@ public:
   /// \brief
   bool setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Request &req,gazebo_ext_msgs::SetSkyProperties::Response &res);
 
+  bool getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualProperties::Request &req,
+                               gazebo_ext_msgs::GetLinkVisualProperties::Response &res);
+
+  bool setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualProperties::Request &req,
+                               gazebo_ext_msgs::SetLinkVisualProperties::Response &res);
+
   // track if the desconstructor event needs to occur
   bool plugin_loaded_;
 
@@ -89,6 +97,8 @@ public:
 
   ros::ServiceServer get_sky_properties_service_;
   ros::ServiceServer set_sky_properties_service_;
+  ros::ServiceServer get_link_visual_properties_service_;
+  ros::ServiceServer set_link_visual_properties_service_;
 
   // ROS comm
   boost::shared_ptr<ros::AsyncSpinner> async_ros_spin_;

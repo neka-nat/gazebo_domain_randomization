@@ -129,6 +129,22 @@ void GazeboScenePlugin::advertiseServices()
                                                                             boost::bind(&GazeboScenePlugin::setSkyProperties,this,_1,_2),
                                                                             ros::VoidPtr(), &gazebo_queue_);
   set_sky_properties_service_ = nh_->advertiseService(set_sky_properties_aso);
+
+  std::string get_link_visual_properties_service_name("get_link_visual_properties");
+  ros::AdvertiseServiceOptions get_link_visual_properties_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetLinkVisualProperties>(
+                                                                                   get_link_visual_properties_service_name,
+                                                                                   boost::bind(&GazeboScenePlugin::getLinkVisualProperties,this,_1,_2),
+                                                                                   ros::VoidPtr(), &gazebo_queue_);
+  get_link_visual_properties_service_ = nh_->advertiseService(get_link_visual_properties_aso);
+
+  std::string set_link_visual_properties_service_name("set_link_visual_properties");
+  ros::AdvertiseServiceOptions set_link_visual_properties_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::SetLinkVisualProperties>(
+                                                                                   set_link_visual_properties_service_name,
+                                                                                   boost::bind(&GazeboScenePlugin::setLinkVisualProperties,this,_1,_2),
+                                                                                   ros::VoidPtr(), &gazebo_queue_);
+  set_link_visual_properties_service_ = nh_->advertiseService(set_link_visual_properties_aso);
 }
 
 bool GazeboScenePlugin::getSkyProperties(gazebo_ext_msgs::GetSkyProperties::Request &req,
@@ -217,6 +233,74 @@ bool GazeboScenePlugin::setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Requ
     res.success = true;
   }
 
+  return true;
+}
+
+bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualProperties::Request &req,
+                                                gazebo_ext_msgs::GetLinkVisualProperties::Response &res)
+{
+  // Get scene pointer
+  rendering::ScenePtr scene = rendering::get_scene();
+
+  // Wait until the scene is initialized.
+  if (!scene || !scene->Initialized())
+  {
+    res.success = false;
+    res.status_message = "getLinkVisualProperties: Could not access the scene!";
+  }
+  rendering::VisualPtr visual = scene->GetVisual(req.link_name);
+  if (!visual)
+  {
+    res.success = false;
+    res.status_message = "getLinkVisualProperties: Could not access the visual!";
+    return true;
+  }
+  ignition::math::Color ambient = visual->Ambient();
+  ignition::math::Color diffuse = visual->Diffuse();
+  ignition::math::Color emissive = visual->Emissive();
+  res.ambient.r = ambient.R();
+  res.ambient.g = ambient.G();
+  res.ambient.b = ambient.B();
+  res.ambient.a = ambient.A();
+  res.diffuse.r = diffuse.R();
+  res.diffuse.g = diffuse.G();
+  res.diffuse.b = diffuse.B();
+  res.diffuse.a = diffuse.A();
+  res.emissive.r = emissive.R();
+  res.emissive.g = emissive.G();
+  res.emissive.b = emissive.B();
+  res.emissive.a = emissive.A();
+  res.success = true;
+  return true;
+}
+
+bool GazeboScenePlugin::setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualProperties::Request &req,
+                                                gazebo_ext_msgs::SetLinkVisualProperties::Response &res)
+{
+  // Get scene pointer
+  rendering::ScenePtr scene = rendering::get_scene();
+
+  // Wait until the scene is initialized.
+  if (!scene || !scene->Initialized())
+  {
+    res.success = false;
+    res.status_message = "setLinkVisualProperties: Could not access the scene!";
+    return true;
+  }
+  rendering::VisualPtr visual = scene->GetVisual(req.link_name);
+  if (!visual)
+  {
+    res.success = false;
+    res.status_message = "setLinkVisualProperties: Could not access the visual!";
+    return true;
+  }
+  ignition::math::Color ambient(req.ambient.r, req.ambient.g, req.ambient.b, req.ambient.a);
+  ignition::math::Color diffuse(req.diffuse.r, req.diffuse.g, req.diffuse.b, req.diffuse.a);
+  ignition::math::Color emissive(req.emissive.r, req.emissive.g, req.emissive.b, req.emissive.a);
+  visual->SetAmbient(ambient);
+  visual->SetDiffuse(diffuse);
+  visual->SetEmissive(emissive);
+  res.success = true;
   return true;
 }
 
