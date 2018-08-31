@@ -11,9 +11,9 @@ class PhysicsPropertiesRandomizer:
         rospy.wait_for_service(gazebo_ns + '/get_physics_properties')
         get_phys_prop = rospy.ServiceProxy(gazebo_ns + '/get_physics_properties', GetPhysicsProperties)
         try:
-	    res = get_phys_prop()
+            res = get_phys_prop()
             if not res.success:
-	        rospy.logwarn(res.status_message)
+                rospy.logwarn(res.status_message)
         except rospy.ServiceException, e:
             rospy.logerr("Service call failed: %s" % e)
         self._default_props = res

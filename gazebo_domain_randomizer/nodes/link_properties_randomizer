@@ -12,9 +12,9 @@ class LinkPropertiesRandomizer:
         rospy.wait_for_service(gazebo_ns + '/get_model_properties')
         get_model_prop = rospy.ServiceProxy(gazebo_ns + '/get_model_properties', GetModelProperties)
         try:
-	    res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
+            res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
             if not res.success:
-	        rospy.logwarn(res.status_message)
+                rospy.logwarn(res.status_message)
         except rospy.ServiceException, e:
             rospy.logerr("Service call failed: %s" % e)
         link_names = ["%s::%s" % (model_name, b) for b in res.body_names]

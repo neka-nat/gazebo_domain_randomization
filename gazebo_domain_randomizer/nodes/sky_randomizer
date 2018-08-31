@@ -10,9 +10,9 @@ class SkyRandomizer:
         get_sky = rospy.ServiceProxy(gazebo_ns + '/get_sky_properties', GetSkyProperties)
         self._set_sky = rospy.ServiceProxy(gazebo_ns + '/set_sky_properties', SetSkyProperties)
         try:
-	    res = get_sky()
+            res = get_sky()
             if not res.success:
-	        rospy.logwarn(res.status_message)
+                rospy.logwarn(res.status_message)
         except rospy.ServiceException, e:
             rospy.logerr("Service call failed: %s" % e)
 	self._default_props = res
