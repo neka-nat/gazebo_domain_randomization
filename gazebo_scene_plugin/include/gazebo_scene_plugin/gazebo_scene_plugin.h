@@ -64,8 +64,8 @@ public:
   /// \param _argv Array of command line arguments.
   virtual void Load(int argc, char** argv);
 
-  /// \brief ros queue thread for this node
-  void gazeboQueueThread();
+  /// \brief Initialize thread for this node
+  void gazeboInitThread();
 
   /// \brief advertise services
   void advertiseServices();
@@ -96,7 +96,7 @@ public:
 
   boost::shared_ptr<ros::NodeHandle> nh_;
   ros::CallbackQueue gazebo_queue_;
-  boost::shared_ptr<boost::thread> gazebo_callback_queue_thread_;
+  boost::shared_ptr<boost::thread> gazebo_callback_init_thread_;
 
   ros::ServiceServer get_sky_properties_service_;
   ros::ServiceServer set_sky_properties_service_;

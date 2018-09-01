@@ -36,8 +36,8 @@ GazeboScenePlugin::~GazeboScenePlugin()
   ROS_DEBUG_STREAM_NAMED("scene_plugin", "Node Handle Shutdown");
 
   // Shutdown ROS queue
-  gazebo_callback_queue_thread_->join();
-  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Callback Queue Joined");
+  gazebo_callback_init_thread_->join();
+  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Callback Init Joined");
 
   ROS_DEBUG_STREAM_NAMED("scene_plugin", "Unloaded");
 }
@@ -77,15 +77,15 @@ void GazeboScenePlugin::Load(int argc, char** argv)
 
   nh_.reset(new ros::NodeHandle("~")); // advertise topics and services in this node's namespace
 
-  /// \brief setup custom callback queue
-  gazebo_callback_queue_thread_.reset(new boost::thread( &GazeboScenePlugin::gazeboQueueThread, this) );
+  /// \brief setup custom callback
+  gazebo_callback_init_thread_.reset(new boost::thread( &GazeboScenePlugin::gazeboInitThread, this) );
   update_connection = event::Events::ConnectPreRender(boost::bind(&GazeboScenePlugin::Update, this));
 
   plugin_loaded_ = true;
   ROS_INFO_NAMED("extension_plugin", "Finished loading Gazebo ROS API Plugin.");
 }
 
-void GazeboScenePlugin::gazeboQueueThread()
+void GazeboScenePlugin::gazeboInitThread()
 {
   rendering::ScenePtr scene = rendering::get_scene();
   while (!scene || !scene->Initialized())
