@@ -14,7 +14,7 @@ class LinkVisualPropertiesRandomizer:
         if len(self._visuals) == 0:
             return
         req = SetLinkVisualPropertiesRequest()
-        req.link_name = np.random.choice(self._visuals)
+        req.link_visual_name = np.random.choice(self._visuals)
         color= ColorRGBA(*[np.random.uniform(self._color_range['r']['min'], self._color_range['r']['max']),
                            np.random.uniform(self._color_range['g']['min'], self._color_range['g']['max']),
                            np.random.uniform(self._color_range['b']['min'], self._color_range['b']['max']),

@@ -1,4 +1,4 @@
-string link_name
+string link_visual_name
 ---
 std_msgs/ColorRGBA ambient
 std_msgs/ColorRGBA diffuse

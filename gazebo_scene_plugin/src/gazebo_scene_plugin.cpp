@@ -250,7 +250,7 @@ bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualPr
     res.success = false;
     res.status_message = "getLinkVisualProperties: Could not access the scene!";
   }
-  rendering::VisualPtr visual = scene->GetVisual(req.link_name);
+  rendering::VisualPtr visual = scene->GetVisual(req.link_visual_name);
   if (!visual)
   {
     res.success = false;
@@ -291,7 +291,7 @@ bool GazeboScenePlugin::setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualPr
     res.status_message = "setLinkVisualProperties: Could not access the scene!";
     return true;
   }
-  rendering::VisualPtr visual = scene->GetVisual(req.link_name);
+  rendering::VisualPtr visual = scene->GetVisual(req.link_visual_name);
   if (!visual)
   {
     res.success = false;
