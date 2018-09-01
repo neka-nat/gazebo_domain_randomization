@@ -96,7 +96,7 @@ void GazeboScenePlugin::gazeboQueueThread()
 {
   static const double timeout = 0.001;
   rendering::ScenePtr scene = rendering::get_scene();
-  while (!scene || !scene->Initialized() || !scene->GetSkyX())
+  while (!scene || !scene->Initialized())
   {
     usleep(500*1000); // can't use ROS Time here b/c node handle is not yet initialized
     scene = rendering::get_scene();
@@ -150,6 +150,8 @@ void GazeboScenePlugin::advertiseServices()
 bool GazeboScenePlugin::getSkyProperties(gazebo_ext_msgs::GetSkyProperties::Request &req,
                                          gazebo_ext_msgs::GetSkyProperties::Response &res)
 {
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+
   // Get scene pointer
   rendering::ScenePtr scene = rendering::get_scene();
 
@@ -191,6 +193,8 @@ bool GazeboScenePlugin::getSkyProperties(gazebo_ext_msgs::GetSkyProperties::Requ
 bool GazeboScenePlugin::setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Request &req,
                                          gazebo_ext_msgs::SetSkyProperties::Response &res)
 {
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+
   // Get scene pointer
   rendering::ScenePtr scene = rendering::get_scene();
 
@@ -239,6 +243,8 @@ bool GazeboScenePlugin::setSkyProperties(gazebo_ext_msgs::SetSkyProperties::Requ
 bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualProperties::Request &req,
                                                 gazebo_ext_msgs::GetLinkVisualProperties::Response &res)
 {
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+
   // Get scene pointer
   rendering::ScenePtr scene = rendering::get_scene();
 
@@ -277,6 +283,8 @@ bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualPr
 bool GazeboScenePlugin::setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualProperties::Request &req,
                                                 gazebo_ext_msgs::SetLinkVisualProperties::Response &res)
 {
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+
   // Get scene pointer
   rendering::ScenePtr scene = rendering::get_scene();
 

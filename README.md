@@ -34,5 +34,9 @@ The generated objects are not collision objects.
 ### Sky randomizer
 This randomizer randomly changes the properties of sky in the world.
 
+### Physics properties randomizer
+
 ### Link properties randomizer
 This randomizer randomly changes mass of the link given by the model name.
+
+### Link visual properties randomizer
