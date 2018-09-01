@@ -2,12 +2,13 @@
 import copy
 import numpy as np
 import rospy
+from geometry_msgs.msg import Vector3
 from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties, SetPhysicsPropertiesRequest
 
 class PhysicsPropertiesRandomizer:
-    def __init__(self, gravity_ratio_range, gazebo_ns='/gazebo'):
-        self._gravity_ratio_range = gravity_ratio_range
+    def __init__(self, gravity_range, gazebo_ns='/gazebo'):
+        self._gravity_range = gravity_range
         rospy.wait_for_service(gazebo_ns + '/get_physics_properties')
         get_phys_prop = rospy.ServiceProxy(gazebo_ns + '/get_physics_properties', GetPhysicsProperties)
         try:
@@ -20,11 +21,11 @@ class PhysicsPropertiesRandomizer:
         self._set_phys_prop = rospy.ServiceProxy(gazebo_ns + '/set_physics_properties', SetPhysicsProperties)
     def callback(self, event):
         req = SetPhysicsPropertiesRequest()
-        r_gravity = np.random.uniform(*self._gravity_ratio_range)
         req.time_step = self._default_props.time_step
         req.max_update_rate = self._default_props.max_update_rate
-        req.gravity = copy.deepcopy(self._default_props.gravity)
-        req.gravity.z *= r_gravity
+        req.gravity = Vector3(*[np.random.uniform(self._gravity_range['x']['min'], self._gravity_range['x']['max']),
+                                np.random.uniform(self._gravity_range['y']['min'], self._gravity_range['y']['max']),
+                                np.random.uniform(self._gravity_range['z']['min'], self._gravity_range['z']['max'])])
         req.ode_config = copy.deepcopy(self._default_props.ode_config)
         try:
             res = self._set_phys_prop(req)
@@ -42,9 +43,12 @@ if __name__ == "__main__":
     args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node("physics_properties_randomizer")
-    gravity_ratio_range = rospy.get_param("~gravity_ratio_range", {'min': 0.8, 'max': 1.2})
-    rospy.loginfo("Load param gravity_ratio_range: " + str(gravity_ratio_range))
-    randomizer = PhysicsPropertiesRandomizer([gravity_ratio_range['min'], gravity_ratio_range['max']])
+    gravity_range = {}
+    gravity_range['x'] = rospy.get_param("~gravity_range/x", {'min': -0.1, 'max': 0.1})
+    gravity_range['y'] = rospy.get_param("~gravity_range/y", {'min': -0.1, 'max': 0.1})
+    gravity_range['z'] = rospy.get_param("~gravity_range/z", {'min': -12.0, 'max': -9.0})
+    rospy.loginfo("Load param gravity_ratio_range: " + str(gravity_range))
+    randomizer = PhysicsPropertiesRandomizer(gravity_range)
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':
