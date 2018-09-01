@@ -82,12 +82,15 @@ public:
   bool setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualProperties::Request &req,
                                gazebo_ext_msgs::SetLinkVisualProperties::Response &res);
 
+  void Update();
+
   // track if the desconstructor event needs to occur
   bool plugin_loaded_;
 
   // detect if sigint event occurs
   bool stop_;
   gazebo::event::ConnectionPtr sigint_event_;
+  gazebo::event::ConnectionPtr update_connection;
 
   std::string robot_namespace_;
 

@@ -79,6 +79,7 @@ void GazeboScenePlugin::Load(int argc, char** argv)
 
   /// \brief setup custom callback queue
   gazebo_callback_queue_thread_.reset(new boost::thread( &GazeboScenePlugin::gazeboQueueThread, this) );
+  update_connection = event::Events::ConnectPreRender(boost::bind(&GazeboScenePlugin::Update, this));
 
   plugin_loaded_ = true;
   ROS_INFO_NAMED("extension_plugin", "Finished loading Gazebo ROS API Plugin.");
@@ -86,7 +87,6 @@ void GazeboScenePlugin::Load(int argc, char** argv)
 
 void GazeboScenePlugin::gazeboQueueThread()
 {
-  static const double timeout = 0.001;
   rendering::ScenePtr scene = rendering::get_scene();
   while (!scene || !scene->Initialized())
   {
@@ -94,8 +94,12 @@ void GazeboScenePlugin::gazeboQueueThread()
     scene = rendering::get_scene();
   }
   advertiseServices();
+}
 
-  while (nh_->ok())
+void GazeboScenePlugin::Update()
+{
+  static const double timeout = 0.001;
+  if (nh_->ok())
   {
     gazebo_queue_.callAvailable(ros::WallDuration(timeout));
   }
