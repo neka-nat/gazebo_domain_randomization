@@ -100,9 +100,6 @@ public:
   ros::ServiceServer get_link_visual_properties_service_;
   ros::ServiceServer set_link_visual_properties_service_;
 
-  // ROS comm
-  boost::shared_ptr<ros::AsyncSpinner> async_ros_spin_;
-
   /// \brief A mutex to lock access to fields that are used in ROS message callbacks
   boost::mutex lock_;
 

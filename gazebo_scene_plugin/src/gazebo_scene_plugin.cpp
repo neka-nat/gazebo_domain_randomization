@@ -31,10 +31,6 @@ GazeboScenePlugin::~GazeboScenePlugin()
     return;
   }
 
-  // Stop the multi threaded ROS spinner
-  async_ros_spin_->stop();
-  ROS_DEBUG_STREAM_NAMED("scene_plugin", "Async ROS Spin Stopped");
-
   // Shutdown the ROS node
   nh_->shutdown();
   ROS_DEBUG_STREAM_NAMED("scene_plugin", "Node Handle Shutdown");
@@ -80,10 +76,6 @@ void GazeboScenePlugin::Load(int argc, char** argv)
   }
 
   nh_.reset(new ros::NodeHandle("~")); // advertise topics and services in this node's namespace
-
-  // Built-in multi-threaded ROS spinning
-  async_ros_spin_.reset(new ros::AsyncSpinner(0)); // will use a thread for each CPU core
-  async_ros_spin_->start();
 
   /// \brief setup custom callback queue
   gazebo_callback_queue_thread_.reset(new boost::thread( &GazeboScenePlugin::gazeboQueueThread, this) );
