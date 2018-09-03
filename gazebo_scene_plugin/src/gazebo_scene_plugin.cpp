@@ -50,7 +50,7 @@ void GazeboScenePlugin::shutdownSignal()
 
 void GazeboScenePlugin::Load(int argc, char** argv)
 {
-  ROS_DEBUG_STREAM_NAMED("extension_plugin","Load");
+  ROS_DEBUG_STREAM_NAMED("scene_plugin","Load");
 
   // connect to sigint event
   sigint_event_ = gazebo::event::Events::ConnectSigInt(boost::bind(&GazeboScenePlugin::shutdownSignal,this));
@@ -59,18 +59,18 @@ void GazeboScenePlugin::Load(int argc, char** argv)
   if (!ros::isInitialized())
     ros::init(argc,argv, "gazebo", ros::init_options::NoSigintHandler);
   else
-    ROS_WARN_NAMED("extension_plugin", "Something other than this gazebo_scene plugin started ros::init(...), command line arguments may not be parsed properly.");
+    ROS_WARN_NAMED("scene_plugin", "Something other than this gazebo_scene plugin started ros::init(...), command line arguments may not be parsed properly.");
 
   // check if the ros master is available - required
   while(!ros::master::check())
   {
-    ROS_WARN_STREAM_NAMED("extension_plugin","No ROS master - start roscore to continue...");
+    ROS_WARN_STREAM_NAMED("scene_plugin", "No ROS master - start roscore to continue...");
     // wait 0.5 second
     usleep(500*1000); // can't use ROS Time here b/c node handle is not yet initialized
 
     if(stop_)
     {
-      ROS_WARN_STREAM_NAMED("extension_plugin","Canceled loading Gazebo ROS API plugin by sigint event");
+      ROS_WARN_STREAM_NAMED("scene_plugin", "Canceled loading Gazebo ROS API plugin by sigint event");
       return;
     }
   }
@@ -82,7 +82,7 @@ void GazeboScenePlugin::Load(int argc, char** argv)
   update_connection = event::Events::ConnectPreRender(boost::bind(&GazeboScenePlugin::Update, this));
 
   plugin_loaded_ = true;
-  ROS_INFO_NAMED("extension_plugin", "Finished loading Gazebo ROS API Plugin.");
+  ROS_INFO_NAMED("scene_plugin", "Finished loading Gazebo Scene Plugin.");
 }
 
 void GazeboScenePlugin::gazeboInitThread()

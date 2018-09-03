@@ -10,5 +10,6 @@
       <uri>model://double_pendulum_with_base</uri>
       <pose>-2.0 0 0 0 0 0</pose>
     </include>
+    <plugin name="physics_plugin" filename="libgazebo_physics_plugin.so"/>
   </world>
 </sdf>

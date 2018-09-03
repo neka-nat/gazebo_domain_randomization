@@ -1,0 +1,10 @@
+string link_col_name
+---
+float64 elastic_modulus
+float64 mu1
+float64 mu2
+float64 mu_torsion
+float64 patch_radius
+float64 poisson_ratio
+bool success
+string status_message
