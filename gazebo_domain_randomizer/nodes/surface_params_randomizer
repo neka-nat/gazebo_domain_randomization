@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+import numpy as np
+import rospy
+from gazebo_ext_msgs.srv import SetSurfaceParams, SetSurfaceParamsRequest
+
+class SurfaceParamsRandomizer:
+    def __init__(self, collisions, mu_range, poisson_ratio_range, gazebo_ns='/gazebo'):
+        self._collisions = collisions
+        self._mu_range = mu_range
+        self._poisson_ratio_range = poisson_ratio_range
+        self._set_surface = rospy.ServiceProxy(gazebo_ns + '/set_surface_params', SetSurfaceParams)
+
+    def callback(self, event):
+        if len(self._collisions) == 0:
+            return
+        req = SetSurfaceParamsRequest()
+        req.link_collision_name = np.random.choice(self._collisions)
+        req.mu1 = np.random.uniform(*self._mu_range)
+        req.mu2 = np.random.uniform(*self._mu_range)
+        req.mu_torsion = np.random.uniform(*self._mu_range)
+        req.poisson_ratio = np.random.uniform(*self._poisson_ratio_range)
+        try:
+            res = self._set_surface(req)
+            if not res.success:
+                rospy.logwarn(res.status_message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s" % e)
+
+if __name__ == "__main__":
+    import argparse
+    from std_msgs.msg import Empty
+    parser = argparse.ArgumentParser(description='Link visual properties randomizer')
+    parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
+    args = parser.parse_args(rospy.myargv()[1:])
+
+    rospy.init_node("surface_params_randomizer")
+    collisions = rospy.get_param("~link_collisions", [])
+    rospy.loginfo("Load link collisions: " + str(collisions))
+    color_range = {}
+    mu_range = rospy.get_param("~mu_range", {'min': 0.0, 'max': 10.0})
+    poisson_ratio_range = rospy.get_param("~poisson_ratio_range", {'min': 0.0, 'max': 1.0})
+    rospy.loginfo("Load param mu_range: " + str(mu_range))
+    rospy.loginfo("Load param poisson_ratio_range: " + str(mu_range))
+    randomizer = SurfaceParamsRandomizer(collisions, [mu_range['min'], mu_range['max']],
+                                         [poisson_ratio_range['min'], poisson_ratio_range['max']])
+    if args.event_mode == 'timer':
+        rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
+    elif args.event_mode == 'trigger':
+        rospy.Subscriber('randomizer/trigger', Empty, randomizer.callback)
+    else:
+        raise ValueError('Unknown event_mode: %s' % args.event_mode)
+    rospy.spin()

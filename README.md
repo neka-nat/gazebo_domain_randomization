@@ -33,3 +33,4 @@ rostopic pub /randomizers/randomizer/trigger std_msgs/Empty "{}"  -r 1.0
 | **link_properties_randomizer** | - link mass |
 | **joint_properties_randomizer** | - joint damping |
 | **link_visual_properties_randomizer** | - link color |
+| **surface_params_randomizer** | - link mu1, mu2, mu_torsion </br> - link poisson ratio |

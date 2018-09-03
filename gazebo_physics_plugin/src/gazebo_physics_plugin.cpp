@@ -65,9 +65,9 @@ bool GazeboPhysicsPlugin::GetSurfaceParamsCallback(gazebo_ext_msgs::GetSurfacePa
 {
   boost::lock_guard<boost::mutex> lock(this->lock_);
 #if GAZEBO_MAJOR_VERSION >= 8
-  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->EntityByName(req.link_col_name));
+  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->EntityByName(req.link_collision_name));
 #else
-  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->GetEntity(req.link_col_name));
+  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->GetEntity(req.link_collision_name));
 #endif
   if (!col)
   {
@@ -104,9 +104,9 @@ bool GazeboPhysicsPlugin::SetSurfaceParamsCallback(gazebo_ext_msgs::SetSurfacePa
 {
   boost::lock_guard<boost::mutex> lock(this->lock_);
 #if GAZEBO_MAJOR_VERSION >= 8
-  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->EntityByName(req.link_col_name));
+  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->EntityByName(req.link_collision_name));
 #else
-  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->GetEntity(req.link_col_name));
+  physics::CollisionPtr col = boost::dynamic_pointer_cast<physics::Collision>(world_->GetEntity(req.link_collision_name));
 #endif
   if (!col)
   {

@@ -1,4 +1,4 @@
-string link_col_name
+string link_collision_name
 ---
 float64 elastic_modulus
 float64 mu1
