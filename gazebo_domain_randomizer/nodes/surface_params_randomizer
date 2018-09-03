@@ -15,9 +15,10 @@ class SurfaceParamsRandomizer:
             return
         req = SetSurfaceParamsRequest()
         req.link_collision_name = np.random.choice(self._collisions)
-        req.mu1 = np.random.uniform(*self._mu_range)
-        req.mu2 = np.random.uniform(*self._mu_range)
-        req.mu_torsion = np.random.uniform(*self._mu_range)
+        mu = np.random.uniform(*self._mu_range)
+        req.mu1 = mu
+        req.mu2 = mu
+        req.mu_torsion = mu
         req.poisson_ratio = np.random.uniform(*self._poisson_ratio_range)
         try:
             res = self._set_surface(req)
