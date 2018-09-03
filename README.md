@@ -24,19 +24,12 @@ rostopic pub /randomizers/randomizer/trigger std_msgs/Empty "{}"  -r 1.0
 
 ## Randomizers
 
-### Light randomizer
-This randomizer randomly changes the properties of the light source given by its name.
-
-### Shape randomizer
-This randomizer randomly generates objects of various shapes in the world space.
-The generated objects are not collision objects.
-
-### Sky randomizer
-This randomizer randomly changes the properties of sky in the world.
-
-### Physics properties randomizer
-
-### Link properties randomizer
-This randomizer randomly changes mass of the link given by the model name.
-
-### Link visual properties randomizer
+|Node name |Randomized parameter|
+| -------- | -------------------- | 
+| **light_randomizer** | - light color </br> - attenuation |
+| **shape_randomizer** | - shape(sphere, box, cylinder) </br> - shape color </br> - position(x, y, z) |
+| **sky_randomizer** | - time of day |
+| **physics properties randomizer** | - gravity(x, y, z) |
+| **link_properties_randomizer** | - link mass |
+| **joint_properties_randomizer** | - joint damping |
+| **link_visual_properties_randomizer** | - link color |
