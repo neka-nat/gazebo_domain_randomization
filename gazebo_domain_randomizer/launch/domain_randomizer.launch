@@ -6,6 +6,7 @@
     <node pkg="gazebo_domain_randomizer" name="shapes_randomizer" type="shapes_randomizer" args="-e $(arg event_mode)" output="screen" />
     <node pkg="gazebo_domain_randomizer" name="sky_randomizer" type="sky_randomizer" args="-e $(arg event_mode)" output="screen" />
     <node pkg="gazebo_domain_randomizer" name="link_properties_randomizer" type="link_properties_randomizer" args="-m $(arg model_name) -e $(arg event_mode)" output="screen" />
+    <node pkg="gazebo_domain_randomizer" name="joint_properties_randomizer" type="joint_properties_randomizer" args="-m $(arg model_name) -e $(arg event_mode)" output="screen" />
     <node pkg="gazebo_domain_randomizer" name="physics_properties_randomizer" type="physics_properties_randomizer" args="-e $(arg event_mode)" output="screen" />
     <node pkg="gazebo_domain_randomizer" name="link_visual_properties_randomizer" type="link_visual_properties_randomizer" args="-e $(arg event_mode)" output="screen" />
   </group>
