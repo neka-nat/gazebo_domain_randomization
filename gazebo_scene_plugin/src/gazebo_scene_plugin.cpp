@@ -259,6 +259,7 @@ bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualPr
   }
   ignition::math::Color ambient = visual->Ambient();
   ignition::math::Color diffuse = visual->Diffuse();
+  ignition::math::Color specular = visual->Specular();
   ignition::math::Color emissive = visual->Emissive();
   res.ambient.r = ambient.R();
   res.ambient.g = ambient.G();
@@ -268,6 +269,10 @@ bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualPr
   res.diffuse.g = diffuse.G();
   res.diffuse.b = diffuse.B();
   res.diffuse.a = diffuse.A();
+  res.specular.r = specular.R();
+  res.specular.g = specular.G();
+  res.specular.b = specular.B();
+  res.specular.a = specular.A();
   res.emissive.r = emissive.R();
   res.emissive.g = emissive.G();
   res.emissive.b = emissive.B();
@@ -300,9 +305,11 @@ bool GazeboScenePlugin::setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualPr
   }
   ignition::math::Color ambient(req.ambient.r, req.ambient.g, req.ambient.b, req.ambient.a);
   ignition::math::Color diffuse(req.diffuse.r, req.diffuse.g, req.diffuse.b, req.diffuse.a);
+  ignition::math::Color specular(req.specular.r, req.specular.g, req.specular.b, req.specular.a);
   ignition::math::Color emissive(req.emissive.r, req.emissive.g, req.emissive.b, req.emissive.a);
   visual->SetAmbient(ambient);
   visual->SetDiffuse(diffuse);
+  visual->SetSpecular(specular);
   visual->SetEmissive(emissive);
   res.success = true;
   return true;
