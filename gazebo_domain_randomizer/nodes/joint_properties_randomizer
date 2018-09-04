@@ -2,28 +2,23 @@
 import numpy as np
 import rospy
 from gazebo_msgs.msg import ODEJointProperties
-from gazebo_msgs.srv import GetModelProperties, GetModelPropertiesRequest
 from gazebo_msgs.srv import GetJointProperties, GetJointPropertiesRequest
 from gazebo_msgs.srv import SetJointProperties, SetJointPropertiesRequest
+from gazebo_domain_randomizer import utils
 
 class JointPropertiesRandomizer:
     def __init__(self, model_name, damping_range, gazebo_ns='/gazebo'):
         self._model_name = model_name
         self._damping_range = damping_range
-        rospy.wait_for_service(gazebo_ns + '/get_model_properties')
-        get_model_prop = rospy.ServiceProxy(gazebo_ns + '/get_model_properties', GetModelProperties)
-        try:
-            res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
-            if not res.success:
-                rospy.logwarn(res.status_message)
-        except rospy.ServiceException, e:
-            rospy.logerr("Service call failed: %s" % e)
+        res = utils.get_model_properties(self._model_name, gazebo_ns)
         self._joint_names = ["%s::%s" % (model_name, b) for b in res.joint_names]
         self._get_joint_prop = rospy.ServiceProxy(gazebo_ns + '/get_joint_properties', GetJointProperties)
         self._set_joint_prop = rospy.ServiceProxy(gazebo_ns + '/set_joint_properties', SetJointProperties)
 
     def callback(self, event):
         req = SetJointPropertiesRequest()
+        if len(self._joint_names) == 0:
+            return
         joint_name = np.random.choice(self._joint_names)
         props = ODEJointProperties()
         props.damping = [np.random.uniform(*self._damping_range)]

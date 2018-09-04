@@ -185,7 +185,7 @@ bool GazeboScenePlugin::getVisualNames(gazebo_ext_msgs::GetVisualNames::Request 
       std::string vis_name = vis->Name();
       for (std::vector<std::string>::const_iterator itr = req.link_names.begin(); itr != req.link_names.end(); ++itr)
       {
-        if (vis_name != *itr && starts_with(vis_name, *itr))
+        if (starts_with(vis_name, *itr))
         {
           vis_names.push_back(vis_name);
           break;

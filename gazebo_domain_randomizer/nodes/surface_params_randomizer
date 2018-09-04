@@ -1,26 +1,19 @@
 #!/usr/bin/env python
 import numpy as np
 import rospy
-from gazebo_msgs.srv import GetModelProperties, GetModelPropertiesRequest
 from gazebo_ext_msgs.srv import GetCollisionNames, GetCollisionNamesRequest
 from gazebo_ext_msgs.srv import SetSurfaceParams, SetSurfaceParamsRequest
+from gazebo_domain_randomizer import utils
 
 class SurfaceParamsRandomizer:
     def __init__(self, model_name, mu_range, poisson_ratio_range, gazebo_ns='/gazebo'):
         self._model_name = model_name
         self._mu_range = mu_range
         self._poisson_ratio_range = poisson_ratio_range
-        rospy.wait_for_service(gazebo_ns + '/get_model_properties')
-        rospy.wait_for_service(gazebo_ns + '/get_collision_names')
-        get_model_prop = rospy.ServiceProxy(gazebo_ns + '/get_model_properties', GetModelProperties)
-        get_col_names = rospy.ServiceProxy(gazebo_ns + '/get_collision_names', GetCollisionNames)
-        try:
-            res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
-            if not res.success:
-                rospy.logwarn(res.status_message)
-        except rospy.ServiceException, e:
-            rospy.logerr("Service call failed: %s" % e)
+        res = utils.get_model_properties(self._model_name, gazebo_ns)
         link_names = ["%s::%s" % (model_name, b) for b in res.body_names]
+        rospy.wait_for_service(gazebo_ns + '/get_collision_names')
+        get_col_names = rospy.ServiceProxy(gazebo_ns + '/get_collision_names', GetCollisionNames)
         try:
             res = get_col_names(GetCollisionNamesRequest(link_names=link_names))
             if not res.success:

@@ -2,25 +2,18 @@
 import numpy as np
 import rospy
 from std_msgs.msg import ColorRGBA
-from gazebo_msgs.srv import GetModelProperties, GetModelPropertiesRequest
 from gazebo_ext_msgs.srv import GetVisualNames, GetVisualNamesRequest
 from gazebo_ext_msgs.srv import SetLinkVisualProperties, SetLinkVisualPropertiesRequest
+from gazebo_domain_randomizer import utils
 
 class LinkVisualPropertiesRandomizer:
     def __init__(self, model_name, color_range, gazebo_ns='/gazebo', gazebo_gui_ns='/gazebo_gui'):
         self._model_name = model_name
         self._color_range = color_range
-        rospy.wait_for_service(gazebo_ns + '/get_model_properties')
-        rospy.wait_for_service(gazebo_gui_ns + '/get_visual_names')
-        get_model_prop = rospy.ServiceProxy(gazebo_ns + '/get_model_properties', GetModelProperties)
-        get_vis_names = rospy.ServiceProxy(gazebo_gui_ns + '/get_visual_names', GetVisualNames)
-        try:
-            res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
-            if not res.success:
-                rospy.logwarn(res.status_message)
-        except rospy.ServiceException, e:
-            rospy.logerr("Service call failed: %s" % e)
+        res = utils.get_model_properties(self._model_name, gazebo_ns)
         link_names = ["%s::%s" % (model_name, b) for b in res.body_names]
+        rospy.wait_for_service(gazebo_gui_ns + '/get_visual_names')
+        get_vis_names = rospy.ServiceProxy(gazebo_gui_ns + '/get_visual_names', GetVisualNames)
         try:
             res = get_vis_names(GetVisualNamesRequest(link_names=link_names))
             if not res.success:
