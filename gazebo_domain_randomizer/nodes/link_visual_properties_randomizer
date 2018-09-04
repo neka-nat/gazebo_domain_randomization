@@ -2,13 +2,33 @@
 import numpy as np
 import rospy
 from std_msgs.msg import ColorRGBA
+from gazebo_msgs.srv import GetModelProperties, GetModelPropertiesRequest
+from gazebo_ext_msgs.srv import GetVisualNames, GetVisualNamesRequest
 from gazebo_ext_msgs.srv import SetLinkVisualProperties, SetLinkVisualPropertiesRequest
 
 class LinkVisualPropertiesRandomizer:
-    def __init__(self, visuals, color_range, gazebo_ns='/gazebo_gui'):
-        self._visuals = visuals
+    def __init__(self, model_name, color_range, gazebo_ns='/gazebo', gazebo_gui_ns='/gazebo_gui'):
+        self._model_name = model_name
         self._color_range = color_range
-        self._set_link_vis = rospy.ServiceProxy(gazebo_ns + '/set_link_visual_properties', SetLinkVisualProperties)
+        rospy.wait_for_service(gazebo_ns + '/get_model_properties')
+        rospy.wait_for_service(gazebo_gui_ns + '/get_visual_names')
+        get_model_prop = rospy.ServiceProxy(gazebo_ns + '/get_model_properties', GetModelProperties)
+        get_vis_names = rospy.ServiceProxy(gazebo_gui_ns + '/get_visual_names', GetVisualNames)
+        try:
+            res = get_model_prop(GetModelPropertiesRequest(model_name=self._model_name))
+            if not res.success:
+                rospy.logwarn(res.status_message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s" % e)
+        link_names = ["%s::%s" % (model_name, b) for b in res.body_names]
+        try:
+            res = get_vis_names(GetVisualNamesRequest(link_names=link_names))
+            if not res.success:
+                rospy.logwarn(res.status_message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s" % e)
+        self._visuals = res.link_visual_names
+        self._set_link_vis = rospy.ServiceProxy(gazebo_gui_ns + '/set_link_visual_properties', SetLinkVisualProperties)
 
     def callback(self, event):
         if len(self._visuals) == 0:
@@ -33,19 +53,18 @@ if __name__ == "__main__":
     import argparse
     from std_msgs.msg import Empty
     parser = argparse.ArgumentParser(description='Link visual properties randomizer')
+    parser.add_argument('-m', '--model_name', type=str, default='', help='Model name.')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node("link_visual_properties_randomizer")
-    visuals = rospy.get_param("~link_visuals", [])
-    rospy.loginfo("Load link visuals: " + str(visuals))
     color_range = {}
     color_range['r'] = rospy.get_param("~link_color_range/r", {'min': 0.0, 'max': 1.0})
     color_range['g'] = rospy.get_param("~link_color_range/g", {'min': 0.0, 'max': 1.0})
     color_range['b'] = rospy.get_param("~link_color_range/b", {'min': 0.0, 'max': 1.0})
     rospy.loginfo("Load param link_color_range: " + str(color_range))
-    randomizer = LinkVisualPropertiesRandomizer(visuals, color_range)
+    randomizer = LinkVisualPropertiesRandomizer(args.model_name, color_range)
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':
