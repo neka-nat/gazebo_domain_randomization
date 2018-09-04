@@ -46,6 +46,12 @@ void GazeboPhysicsPlugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
     this, _1, _2), ros::VoidPtr(), &this->queue_);
   this->get_col_name_srv_ = this->rosnode_->advertiseService(get_col_name_aso);
 
+  ros::AdvertiseServiceOptions get_vis_names_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetVisualNames>(
+    "get_visual_names", boost::bind(&GazeboPhysicsPlugin::GetVisualNamesCallback,
+    this,_1,_2), ros::VoidPtr(), &queue_);
+  this->get_vis_name_srv_ = this->rosnode_->advertiseService(get_vis_names_aso);
+
   ros::AdvertiseServiceOptions get_aso =
     ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetSurfaceParams>(
     "get_surface_params", boost::bind(&GazeboPhysicsPlugin::GetSurfaceParamsCallback,
@@ -90,6 +96,34 @@ bool GazeboPhysicsPlugin::GetCollisionNamesCallback(gazebo_ext_msgs::GetCollisio
     }
   }
   res.link_collision_names = col_names;
+  res.success = true;
+  return true;
+}
+
+bool GazeboPhysicsPlugin::GetVisualNamesCallback(gazebo_ext_msgs::GetVisualNames::Request &req,
+                                                 gazebo_ext_msgs::GetVisualNames::Response &res)
+{
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+  std::vector<std::string> vis_names;
+  for (std::vector<std::string>::const_iterator itr = req.link_names.begin(); itr != req.link_names.end(); ++itr)
+  {
+#if GAZEBO_MAJOR_VERSION >= 8
+    physics::LinkPtr link = boost::dynamic_pointer_cast<physics::Link>(world_->EntityByName(*itr));
+#else
+    physics::LinkPtr link = boost::dynamic_pointer_cast<physics::Link>(world_->GetEntity(*itr));
+#endif
+    if (!link)
+    {
+      res.success = false;
+      res.status_message = "GetCollisionNamesCallback: Could not access the link!";
+      return true;
+    }
+    for (physics::Link::Visuals_M::const_iterator jtr = link->visuals.begin(); jtr != link->visuals.end(); ++jtr)
+    {
+      vis_names.push_back(jtr->second.name());
+    }
+  }
+  res.link_visual_names = vis_names;
   res.success = true;
   return true;
 }

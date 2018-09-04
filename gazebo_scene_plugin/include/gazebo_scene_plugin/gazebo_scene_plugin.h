@@ -23,7 +23,6 @@
 // Services
 #include "std_srvs/Empty.h"
 
-#include "gazebo_ext_msgs/GetVisualNames.h"
 #include "gazebo_ext_msgs/SetSkyProperties.h"
 #include "gazebo_ext_msgs/GetSkyProperties.h"
 #include "gazebo_ext_msgs/GetLinkVisualProperties.h"
@@ -71,8 +70,6 @@ public:
   /// \brief advertise services
   void advertiseServices();
 
-  bool getVisualNames(gazebo_ext_msgs::GetVisualNames::Request &req, gazebo_ext_msgs::GetVisualNames::Response &res);
-
   /// \brief
   bool getSkyProperties(gazebo_ext_msgs::GetSkyProperties::Request &req,gazebo_ext_msgs::GetSkyProperties::Response &res);
 
@@ -101,7 +98,6 @@ public:
   ros::CallbackQueue gazebo_queue_;
   boost::shared_ptr<boost::thread> gazebo_callback_init_thread_;
 
-  ros::ServiceServer get_visual_names_service_;
   ros::ServiceServer get_sky_properties_service_;
   ros::ServiceServer set_sky_properties_service_;
   ros::ServiceServer get_link_visual_properties_service_;

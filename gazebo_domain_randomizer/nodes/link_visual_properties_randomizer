@@ -12,8 +12,8 @@ class LinkVisualPropertiesRandomizer:
         self._color_range = color_range
         res = utils.get_model_properties(self._model_name, gazebo_ns)
         link_names = ["%s::%s" % (model_name, b) for b in res.body_names]
-        rospy.wait_for_service(gazebo_gui_ns + '/get_visual_names')
-        get_vis_names = rospy.ServiceProxy(gazebo_gui_ns + '/get_visual_names', GetVisualNames)
+        rospy.wait_for_service(gazebo_ns + '/get_visual_names')
+        get_vis_names = rospy.ServiceProxy(gazebo_ns + '/get_visual_names', GetVisualNames)
         try:
             res = get_vis_names(GetVisualNamesRequest(link_names=link_names))
             if not res.success:

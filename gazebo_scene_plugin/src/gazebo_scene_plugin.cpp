@@ -5,15 +5,6 @@
 #include "skyx/include/SkyX.h"
 #include "gazebo_scene_plugin/gazebo_scene_plugin.h"
 
-namespace
-{
-  bool starts_with(const std::string& s, const std::string& prefix) {
-    auto size = prefix.size();
-    if (s.size() < size) return false;
-    return std::equal(std::begin(prefix), std::end(prefix), std::begin(s));
-  }
-}
-
 namespace gazebo
 {
 
@@ -117,15 +108,6 @@ void GazeboScenePlugin::Update()
 void GazeboScenePlugin::advertiseServices()
 {
   // Advertise more services on the custom queue
-  std::string get_visual_names_service_name("get_visual_names");
-  ros::AdvertiseServiceOptions get_visual_names_aso =
-    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetVisualNames>(
-                                                                          get_visual_names_service_name,
-                                                                          boost::bind(&GazeboScenePlugin::getVisualNames,this,_1,_2),
-                                                                          ros::VoidPtr(), &gazebo_queue_);
-  get_visual_names_service_ = nh_->advertiseService(get_visual_names_aso);
-
-  // Advertise more services on the custom queue
   std::string get_sky_properties_service_name("get_sky_properties");
   ros::AdvertiseServiceOptions get_sky_properties_aso =
     ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetSkyProperties>(
@@ -157,45 +139,6 @@ void GazeboScenePlugin::advertiseServices()
                                                                                    boost::bind(&GazeboScenePlugin::setLinkVisualProperties,this,_1,_2),
                                                                                    ros::VoidPtr(), &gazebo_queue_);
   set_link_visual_properties_service_ = nh_->advertiseService(set_link_visual_properties_aso);
-}
-
-bool GazeboScenePlugin::getVisualNames(gazebo_ext_msgs::GetVisualNames::Request &req,
-                                       gazebo_ext_msgs::GetVisualNames::Response &res)
-{
-  boost::lock_guard<boost::mutex> lock(this->lock_);
-
-  // Get scene pointer
-  rendering::ScenePtr scene = rendering::get_scene();
-  if (!scene || !scene->Initialized())
-  {
-    res.success = false;
-    res.status_message = "getVisualNames: Could not access the scene!";
-  }
-  else
-  {
-    std::vector<std::string> vis_names;
-    uint32_t n_vis = scene->VisualCount();
-    for (uint32_t i = 0; i < n_vis; ++i)
-    {
-      rendering::VisualPtr vis = scene->GetVisual(i);
-      if (!vis)
-      {
-        continue;
-      }
-      std::string vis_name = vis->Name();
-      for (std::vector<std::string>::const_iterator itr = req.link_names.begin(); itr != req.link_names.end(); ++itr)
-      {
-        if (starts_with(vis_name, *itr))
-        {
-          vis_names.push_back(vis_name);
-          break;
-        }
-      }
-    }
-    res.link_visual_names = vis_names;
-    res.success = true;
-  }
-  return true;
 }
 
 bool GazeboScenePlugin::getSkyProperties(gazebo_ext_msgs::GetSkyProperties::Request &req,

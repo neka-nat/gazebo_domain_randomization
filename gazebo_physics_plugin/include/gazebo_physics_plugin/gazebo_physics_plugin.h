@@ -12,12 +12,15 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
+#define protected public
 #include <gazebo/physics/physics.hh>
+#undef protected
 #include <gazebo/transport/TransportTypes.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/Events.hh>
 
 #include "gazebo_ext_msgs/GetCollisionNames.h"
+#include "gazebo_ext_msgs/GetVisualNames.h"
 #include "gazebo_ext_msgs/GetSurfaceParams.h"
 #include "gazebo_ext_msgs/SetSurfaceParams.h"
 
@@ -48,10 +51,13 @@ class GazeboPhysicsPlugin : public WorldPlugin
   private: boost::mutex lock_;
 
   private: ros::ServiceServer get_col_name_srv_;
+  private: ros::ServiceServer get_vis_name_srv_;
   private: ros::ServiceServer get_srv_;
   private: ros::ServiceServer set_srv_;
   private: bool GetCollisionNamesCallback(gazebo_ext_msgs::GetCollisionNames::Request &req,
                                           gazebo_ext_msgs::GetCollisionNames::Response &res);
+  private: bool GetVisualNamesCallback(gazebo_ext_msgs::GetVisualNames::Request &req,
+                                       gazebo_ext_msgs::GetVisualNames::Response &res);
   private: bool GetSurfaceParamsCallback(gazebo_ext_msgs::GetSurfaceParams::Request &req,
                                          gazebo_ext_msgs::GetSurfaceParams::Response &res);
   private: bool SetSurfaceParamsCallback(gazebo_ext_msgs::SetSurfaceParams::Request &req,
