@@ -11,13 +11,6 @@
      "double_pendulum_with_base::lower_link::vis_lower_joint",
      "double_pendulum_with_base::lower_link::vis_cylinder"]
   </rosparam>
-  <rosparam param="/randomizers/surface_params_randomizer/link_collisions">
-    ["double_pendulum_with_base::upper_link::col_upper_joint",
-     "double_pendulum_with_base::upper_link::col_lower_joint",
-     "double_pendulum_with_base::upper_link::col_cylinder",
-     "double_pendulum_with_base::lower_link::col_lower_joint",
-     "double_pendulum_with_base::lower_link::col_cylinder"]
-  </rosparam>
   <node name="gazebo_gui" pkg="gazebo_domain_randomizer" type="gzclient" respawn="false" output="screen" />
   <include file="$(find gazebo_domain_randomizer)/launch/domain_randomizer.launch">
     <arg name="model_name" default="double_pendulum_with_base" />

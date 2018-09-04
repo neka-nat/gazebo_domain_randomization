@@ -40,6 +40,12 @@ void GazeboPhysicsPlugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   this->rosnode_ = new ros::NodeHandle("~");
 
   // advertise services on the custom queue
+  ros::AdvertiseServiceOptions get_col_name_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetCollisionNames>(
+    "get_collision_names", boost::bind(&GazeboPhysicsPlugin::GetCollisionNamesCallback,
+    this, _1, _2), ros::VoidPtr(), &this->queue_);
+  this->get_col_name_srv_ = this->rosnode_->advertiseService(get_col_name_aso);
+
   ros::AdvertiseServiceOptions get_aso =
     ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::GetSurfaceParams>(
     "get_surface_params", boost::bind(&GazeboPhysicsPlugin::GetSurfaceParamsCallback,
@@ -57,6 +63,35 @@ void GazeboPhysicsPlugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
     boost::thread(boost::bind(&GazeboPhysicsPlugin::QueueThread, this));
 
   ROS_INFO_NAMED("physics_plugin", "Finished loading Gazebo Physics Plugin.");
+}
+
+bool GazeboPhysicsPlugin::GetCollisionNamesCallback(gazebo_ext_msgs::GetCollisionNames::Request &req,
+                                                    gazebo_ext_msgs::GetCollisionNames::Response &res)
+{
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+  std::vector<std::string> col_names;
+  for (std::vector<std::string>::const_iterator itr = req.link_names.begin(); itr != req.link_names.end(); ++itr)
+  {
+#if GAZEBO_MAJOR_VERSION >= 8
+    physics::LinkPtr link = boost::dynamic_pointer_cast<physics::Link>(world_->EntityByName(*itr));
+#else
+    physics::LinkPtr link = boost::dynamic_pointer_cast<physics::Link>(world_->GetEntity(*itr));
+#endif
+    if (!link)
+    {
+      res.success = false;
+      res.status_message = "GetCollisionNamesCallback: Could not access the link!";
+      return true;
+    }
+    physics::Collision_V cols = link->GetCollisions();
+    for (physics::Collision_V::const_iterator jtr = cols.begin(); jtr != cols.end(); ++jtr)
+    {
+      col_names.push_back((*itr) + "::" + (*jtr)->GetName());
+    }
+  }
+  res.link_collision_names = col_names;
+  res.success = true;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/Events.hh>
 
+#include "gazebo_ext_msgs/GetCollisionNames.h"
 #include "gazebo_ext_msgs/GetSurfaceParams.h"
 #include "gazebo_ext_msgs/SetSurfaceParams.h"
 
@@ -46,8 +47,11 @@ class GazeboPhysicsPlugin : public WorldPlugin
   /// \brief A mutex to lock access to fields that are used in ROS message callbacks
   private: boost::mutex lock_;
 
+  private: ros::ServiceServer get_col_name_srv_;
   private: ros::ServiceServer get_srv_;
   private: ros::ServiceServer set_srv_;
+  private: bool GetCollisionNamesCallback(gazebo_ext_msgs::GetCollisionNames::Request &req,
+                                          gazebo_ext_msgs::GetCollisionNames::Response &res);
   private: bool GetSurfaceParamsCallback(gazebo_ext_msgs::GetSurfaceParams::Request &req,
                                          gazebo_ext_msgs::GetSurfaceParams::Response &res);
   private: bool SetSurfaceParamsCallback(gazebo_ext_msgs::SetSurfaceParams::Request &req,
