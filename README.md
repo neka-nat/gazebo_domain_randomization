@@ -28,6 +28,39 @@ And please execute the following command on another console.
 rostopic pub /randomizers/randomizer/trigger std_msgs/Empty "{}"  -r 1.0
 ```
 
+## Settings
+To use the randamizers, you need to make the following two settings.
+
+1. For the world to be randomized, set the world plugin.
+
+```xml
+<sdf version="1.6">
+  <world name="default">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    ...
+    <plugin name="physics_plugin" filename="libgazebo_physics_plugin.so"/>
+  </world>
+</sdf>
+```
+
+2. For visual randomization, you need to load the system plugin for gzclient. Therefore, please use the gzclient script in the gazebo_domain_randomizer package. It configures to load the system plugin in the script.
+
+```xml
+<launch>
+  ...
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="gui" value="false" />
+  </include>
+  <node name="gazebo_gui" pkg="gazebo_domain_randomizer" type="gzclient" respawn="false" output="screen" />
+  ...
+</launch>
+```
+
 ## Randomizers
 
 |Node name |Randomized parameter|
