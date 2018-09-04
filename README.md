@@ -2,7 +2,13 @@
 
 https://arxiv.org/abs/1703.06907
 
+**Double pendulum demo**
+
 ![result](gazebo_domain_randomizer/images/result.gif)
+
+**Shadow hand demo**
+
+![sr_hand](gazebo_domain_randomizer/images/sr_hand.gif)
 
 ## Run
 

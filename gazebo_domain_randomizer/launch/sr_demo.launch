@@ -1,0 +1,16 @@
+<launch>
+  <arg name="event_mode" default="timer" />
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+     <arg name="world_name" value="$(find gazebo_domain_randomizer)/worlds/empty.world" />
+     <arg name="gui" value="false" />
+  </include>
+   <node name="gazebo_gui" pkg="gazebo_domain_randomizer" type="gzclient" respawn="false" output="screen" />
+
+   <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find sr_description)/robots/shadowhand_motor.urdf.xacro'" />
+   <!-- push robot_description to factory and spawn robot in gazebo -->
+   <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot" respawn="false" output="screen" />
+   <include file="$(find gazebo_domain_randomizer)/launch/domain_randomizer.launch">
+     <arg name="model_name" default="robot" />
+     <arg name="event_mode" default="$(arg event_mode)" />
+   </include>
+</launch>
