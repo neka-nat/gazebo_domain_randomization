@@ -21,7 +21,7 @@ class LinkVisualPropertiesRandomizer:
                            1.0])
         req.ambient = color
         req.diffuse = color
-        req.emissive = color
+        req.emissive = ColorRGBA(0.0, 0.0, 0.0, 1.0)
         try:
             res = self._set_link_vis(req)
             if not res.success:
