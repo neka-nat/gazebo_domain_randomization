@@ -13,7 +13,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>gazebo_ext_msgs</exec_depend>
-  <exec_depend>gazebo_scene_plugins</exec_depend>
+  <exec_depend>gazebo_scene_plugin</exec_depend>
   <exec_depend>gazebo_domain_randomizer</exec_depend>
 
   <export>

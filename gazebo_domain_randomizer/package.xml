@@ -26,9 +26,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>gazebo_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>gazebo_ext_msgs</build_depend>
   <run_depend>rospy</run_depend>
   <run_depend>gazebo_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>gazebo_ext_msgs</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

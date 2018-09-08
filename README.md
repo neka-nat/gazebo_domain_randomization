@@ -1,5 +1,7 @@
 # Gazebo Domain Randomization
 
+[![Build Status](https://travis-ci.org/neka-nat/gazebo_domain_randomization.svg?branch=master)](https://travis-ci.org/neka-nat/gazebo_domain_randomization)
+
 https://arxiv.org/abs/1703.06907
 
 **Double pendulum demo**
@@ -31,7 +33,7 @@ rostopic pub /randomizers/randomizer/trigger std_msgs/Empty "{}"  -r 1.0
 ## Settings
 To use the randamizers, you need to make the following two settings.
 
-1. For the world to be randomized, set the world plugin.
+1. For physics parameters randomization, set *physics_plugin* (WorldPlugin) in the world file.
 
 ```xml
 <sdf version="1.6">
@@ -48,7 +50,7 @@ To use the randamizers, you need to make the following two settings.
 </sdf>
 ```
 
-2. For visual randomization, you need to load the system plugin for gzclient. Therefore, please use the gzclient script in the gazebo_domain_randomizer package. It configures to load the system plugin in the script.
+2. For visual randomization, you need to load *scene_plugin* (SystemPlugin) for gzclient. Therefore, please use the gzclient script in gazebo_domain_randomizer package. It configures to load the system plugin in the script.
 
 ```xml
 <launch>
