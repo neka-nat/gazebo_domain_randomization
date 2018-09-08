@@ -256,6 +256,7 @@ bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualPr
     res.status_message = "getLinkVisualProperties: Could not access the visual!";
     return true;
   }
+#if GAZEBO_MAJOR_VERSION >= 8
   ignition::math::Color ambient = visual->Ambient();
   ignition::math::Color diffuse = visual->Diffuse();
   ignition::math::Color specular = visual->Specular();
@@ -276,6 +277,28 @@ bool GazeboScenePlugin::getLinkVisualProperties(gazebo_ext_msgs::GetLinkVisualPr
   res.emissive.g = emissive.G();
   res.emissive.b = emissive.B();
   res.emissive.a = emissive.A();
+#else
+  common::Color ambient = visual->GetAmbient();
+  common::Color diffuse = visual->GetDiffuse();
+  common::Color specular = visual->GetSpecular();
+  common::Color emissive = visual->GetEmissive();
+  res.ambient.r = ambient.r;
+  res.ambient.g = ambient.g;
+  res.ambient.b = ambient.b;
+  res.ambient.a = ambient.a;
+  res.diffuse.r = diffuse.r;
+  res.diffuse.g = diffuse.g;
+  res.diffuse.b = diffuse.b;
+  res.diffuse.a = diffuse.a;
+  res.specular.r = specular.r;
+  res.specular.g = specular.g;
+  res.specular.b = specular.b;
+  res.specular.a = specular.a;
+  res.emissive.r = emissive.r;
+  res.emissive.g = emissive.g;
+  res.emissive.b = emissive.b;
+  res.emissive.a = emissive.a;
+#endif
   res.success = true;
   return true;
 }
@@ -302,10 +325,17 @@ bool GazeboScenePlugin::setLinkVisualProperties(gazebo_ext_msgs::SetLinkVisualPr
     res.status_message = "setLinkVisualProperties: Could not access the visual!";
     return true;
   }
+#if GAZEBO_MAJOR_VERSION >= 8
   ignition::math::Color ambient(req.ambient.r, req.ambient.g, req.ambient.b, req.ambient.a);
   ignition::math::Color diffuse(req.diffuse.r, req.diffuse.g, req.diffuse.b, req.diffuse.a);
   ignition::math::Color specular(req.specular.r, req.specular.g, req.specular.b, req.specular.a);
   ignition::math::Color emissive(req.emissive.r, req.emissive.g, req.emissive.b, req.emissive.a);
+#else
+  common::Color ambient(req.ambient.r, req.ambient.g, req.ambient.b, req.ambient.a);
+  common::Color diffuse(req.diffuse.r, req.diffuse.g, req.diffuse.b, req.diffuse.a);
+  common::Color specular(req.specular.r, req.specular.g, req.specular.b, req.specular.a);
+  common::Color emissive(req.emissive.r, req.emissive.g, req.emissive.b, req.emissive.a);
+#endif
   visual->SetAmbient(ambient);
   visual->SetDiffuse(diffuse);
   visual->SetSpecular(specular);
