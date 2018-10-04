@@ -39,6 +39,7 @@ if __name__ == "__main__":
     from std_msgs.msg import Empty
     parser = argparse.ArgumentParser(description='Physics properties randomizer')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('--gazebo_ns', type=str, default='/gazebo', help='Gazebo namespace.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     gravity_range['y'] = rospy.get_param("~gravity_range/y", {'min': -0.1, 'max': 0.1})
     gravity_range['z'] = rospy.get_param("~gravity_range/z", {'min': -12.0, 'max': -9.0})
     rospy.loginfo("Load param gravity_ratio_range: " + str(gravity_range))
-    randomizer = PhysicsPropertiesRandomizer(gravity_range)
+    randomizer = PhysicsPropertiesRandomizer(gravity_range, gazebo_ns=args.gazebo_ns)
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':

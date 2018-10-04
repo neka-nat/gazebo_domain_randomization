@@ -37,13 +37,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Link properties randomizer')
     parser.add_argument('-m', '--model_name', type=str, default='', help='Model name.')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('--gazebo_ns', type=str, default='/gazebo', help='Gazebo namespace.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node("joint_properties_randomizer")
     damping_range = rospy.get_param('~damping_range', {'min': 0.0, 'max': 2.0})
     rospy.loginfo("Load param damping_range: " + str(damping_range))
-    randomizer = JointPropertiesRandomizer(args.model_name, [damping_range['min'], damping_range['max']])
+    randomizer = JointPropertiesRandomizer(args.model_name, [damping_range['min'], damping_range['max']],
+                                           gazebo_ns=args.gazebo_ns)
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':

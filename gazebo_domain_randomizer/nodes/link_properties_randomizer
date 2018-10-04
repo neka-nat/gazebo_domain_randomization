@@ -47,13 +47,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Link properties randomizer')
     parser.add_argument('-m', '--model_name', type=str, default='', help='Model name.')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('--gazebo_ns', type=str, default='/gazebo', help='Gazebo namespace.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node("link_properties_randomizer")
     mass_ratio_range = rospy.get_param('~mass_ratio_range', {'min': 0.8, 'max': 1.2})
     rospy.loginfo("Load param mass_ratio_range: " + str(mass_ratio_range))
-    randomizer = LinkPropertiesRandomizer(args.model_name, [mass_ratio_range['min'], mass_ratio_range['max']])
+    randomizer = LinkPropertiesRandomizer(args.model_name, [mass_ratio_range['min'], mass_ratio_range['max']],
+                                          gazebo_ns=args.gazebo_ns)
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':

@@ -46,6 +46,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Link visual properties randomizer')
     parser.add_argument('-m', '--model_name', type=str, default='', help='Model name.')
     parser.add_argument('-d', '--duration', type=float, default=1.0, help='Timer duration.')
+    parser.add_argument('--gazebo_ns', type=str, default='/gazebo', help='Gazebo namespace.')
     parser.add_argument('-e', '--event_mode', type=str, default='timer', choices=['timer', 'trigger'], help='Timer duration.')
     args = parser.parse_args(rospy.myargv()[1:])
 
@@ -56,7 +57,8 @@ if __name__ == "__main__":
     rospy.loginfo("Load param mu_range: " + str(mu_range))
     rospy.loginfo("Load param poisson_ratio_range: " + str(mu_range))
     randomizer = SurfaceParamsRandomizer(args.model_name, [mu_range['min'], mu_range['max']],
-                                         [poisson_ratio_range['min'], poisson_ratio_range['max']])
+                                         [poisson_ratio_range['min'], poisson_ratio_range['max']],
+                                         gazebo_ns=args.gazebo_ns)
     if args.event_mode == 'timer':
         rospy.Timer(rospy.Duration(args.duration), randomizer.callback)
     elif args.event_mode == 'trigger':
