@@ -1,5 +1,6 @@
 string[] link_names
 ---
 string[] link_visual_names
+string[] link_parent_names
 bool success
 string status_message

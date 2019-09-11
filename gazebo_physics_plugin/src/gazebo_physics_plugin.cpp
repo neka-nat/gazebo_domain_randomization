@@ -15,6 +15,9 @@ GazeboPhysicsPlugin::GazeboPhysicsPlugin()
 // Destructor
 GazeboPhysicsPlugin::~GazeboPhysicsPlugin()
 {
+  //Finalize gazebo node
+  this->gzNode->Fini();
+
   // Finalize the controller
   this->rosnode_->shutdown();
   this->callback_queue_thread_.join();
@@ -38,6 +41,11 @@ void GazeboPhysicsPlugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   }
 
   this->rosnode_ = new ros::NodeHandle("~");
+
+  //Start Gazebo node and create ~/visual publisher
+  this->gzNode = transport::NodePtr(new transport::Node());
+  this->gzNode->Init();
+  this->visualPub = this->gzNode->Advertise<msgs::Visual>("~/visual");
 
   // advertise services on the custom queue
   ros::AdvertiseServiceOptions get_col_name_aso =
@@ -63,6 +71,12 @@ void GazeboPhysicsPlugin::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
     "set_surface_params", boost::bind(&GazeboPhysicsPlugin::SetSurfaceParamsCallback,
     this, _1, _2), ros::VoidPtr(), &this->queue_);
   this->set_srv_ = this->rosnode_->advertiseService(set_aso);
+
+  ros::AdvertiseServiceOptions set_col_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_ext_msgs::SetLinkColor>(
+    "set_link_color", boost::bind(&GazeboPhysicsPlugin::SetLinkColorCallback,
+    this, _1, _2), ros::VoidPtr(), &this->queue_);
+  this->set_col_srv_ = this->rosnode_->advertiseService(set_col_aso);
 
   // start custom queue
   this->callback_queue_thread_ =
@@ -105,6 +119,7 @@ bool GazeboPhysicsPlugin::GetVisualNamesCallback(gazebo_ext_msgs::GetVisualNames
 {
   boost::lock_guard<boost::mutex> lock(this->lock_);
   std::vector<std::string> vis_names;
+  std::vector<std::string> parent_names;
   for (std::vector<std::string>::const_iterator itr = req.link_names.begin(); itr != req.link_names.end(); ++itr)
   {
 #if GAZEBO_MAJOR_VERSION >= 8
@@ -121,9 +136,11 @@ bool GazeboPhysicsPlugin::GetVisualNamesCallback(gazebo_ext_msgs::GetVisualNames
     for (physics::Link::Visuals_M::const_iterator jtr = link->visuals.begin(); jtr != link->visuals.end(); ++jtr)
     {
       vis_names.push_back(jtr->second.name());
+      parent_names.push_back(*itr);
     }
   }
   res.link_visual_names = vis_names;
+  res.link_parent_names = parent_names;
   res.success = true;
   return true;
 }
@@ -203,6 +220,55 @@ bool GazeboPhysicsPlugin::SetSurfaceParamsCallback(gazebo_ext_msgs::SetSurfacePa
   friction->SetMuTorsion(req.mu_torsion);
   friction->SetPatchRadius(req.patch_radius);
   friction->SetPoissonsRatio(req.poisson_ratio);
+  res.success = true;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool GazeboPhysicsPlugin::SetLinkColorCallback(gazebo_ext_msgs::SetLinkColor::Request &req,
+                                               gazebo_ext_msgs::SetLinkColor::Response &res)
+{
+  boost::lock_guard<boost::mutex> lock(this->lock_);
+
+  //gets the visual message
+#if GAZEBO_MAJOR_VERSION >= 8
+  physics::LinkPtr link = boost::dynamic_pointer_cast<physics::Link>(world_->EntityByName(req.link_parent_name));
+#else
+  physics::LinkPtr link = boost::dynamic_pointer_cast<physics::Link>(world_->GetEntity(req.link_parent_name));
+#endif
+
+  msgs::Visual visualMsg = link->GetVisualMessage(req.link_visual_name);
+  visualMsg.set_name(link->GetScopedName());
+
+  //starts a new material, in case the object doesn't have one
+  if ((!visualMsg.has_material()) || visualMsg.mutable_material() == NULL) {
+    msgs::Material *materialMsg = new msgs::Material;
+    visualMsg.set_allocated_material(materialMsg);
+  }
+
+  // Set color
+  common::Color ambient(req.ambient.r, req.ambient.g, req.ambient.b, req.ambient.a);
+  common::Color diffuse(req.diffuse.r, req.diffuse.g, req.diffuse.b, req.diffuse.a);
+
+  msgs::Color *colorMsg = new msgs::Color(msgs::Convert(ambient));
+  msgs::Color *diffuseMsg = new msgs::Color(msgs::Convert(diffuse));
+
+  //add color to material
+  msgs::Material *materialMsg = visualMsg.mutable_material();
+  if (materialMsg->has_ambient())
+  {
+    materialMsg->clear_ambient();
+  }
+  materialMsg->set_allocated_ambient(colorMsg);
+  if (materialMsg->has_diffuse())
+  {
+    materialMsg->clear_diffuse();
+  }
+  materialMsg->set_allocated_diffuse(diffuseMsg);
+
+  //publish message
+  this->visualPub->Publish(visualMsg);
+
   res.success = true;
   return true;
 }

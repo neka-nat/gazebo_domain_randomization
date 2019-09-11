@@ -16,6 +16,8 @@
 #include <gazebo/physics/physics.hh>
 #undef protected
 #include <gazebo/transport/TransportTypes.hh>
+#include <gazebo/transport/TransportIface.hh>
+#include <gazebo/msgs/msgs.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/Events.hh>
 
@@ -23,6 +25,7 @@
 #include "gazebo_ext_msgs/GetVisualNames.h"
 #include "gazebo_ext_msgs/GetSurfaceParams.h"
 #include "gazebo_ext_msgs/SetSurfaceParams.h"
+#include "gazebo_ext_msgs/SetLinkColor.h"
 
 namespace gazebo
 {
@@ -50,10 +53,17 @@ class GazeboPhysicsPlugin : public WorldPlugin
   /// \brief A mutex to lock access to fields that are used in ROS message callbacks
   private: boost::mutex lock_;
 
+  /// \brief A pointer to the Gazebo node
+  private: transport::NodePtr gzNode;
+
+  /// \brief A pointer to gazebo's ~/visual topic publisher
+  private: transport::PublisherPtr visualPub;
+
   private: ros::ServiceServer get_col_name_srv_;
   private: ros::ServiceServer get_vis_name_srv_;
   private: ros::ServiceServer get_srv_;
   private: ros::ServiceServer set_srv_;
+  private: ros::ServiceServer set_col_srv_;
   private: bool GetCollisionNamesCallback(gazebo_ext_msgs::GetCollisionNames::Request &req,
                                           gazebo_ext_msgs::GetCollisionNames::Response &res);
   private: bool GetVisualNamesCallback(gazebo_ext_msgs::GetVisualNames::Request &req,
@@ -62,6 +72,8 @@ class GazeboPhysicsPlugin : public WorldPlugin
                                          gazebo_ext_msgs::GetSurfaceParams::Response &res);
   private: bool SetSurfaceParamsCallback(gazebo_ext_msgs::SetSurfaceParams::Request &req,
                                          gazebo_ext_msgs::SetSurfaceParams::Response &res);
+  private: bool SetLinkColorCallback(gazebo_ext_msgs::SetLinkColor::Request &req,
+                                     gazebo_ext_msgs::SetLinkColor::Response &res);
 
   // Custom Callback Queue
   private: ros::CallbackQueue queue_;
