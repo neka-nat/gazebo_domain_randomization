@@ -4,6 +4,7 @@ import rospy
 from std_msgs.msg import ColorRGBA
 from gazebo_ext_msgs.srv import GetVisualNames, GetVisualNamesRequest
 from gazebo_ext_msgs.srv import SetLinkVisualProperties, SetLinkVisualPropertiesRequest
+from gazebo_ext_msgs.srv import SetLinkColor, SetLinkColorRequest
 from gazebo_domain_randomizer import utils
 
 class LinkVisualPropertiesRandomizer:
@@ -21,13 +22,16 @@ class LinkVisualPropertiesRandomizer:
         except rospy.ServiceException, e:
             rospy.logerr("Service call failed: %s" % e)
         self._visuals = res.link_visual_names
-        self._set_link_vis = rospy.ServiceProxy(gazebo_gui_ns + '/set_link_visual_properties', SetLinkVisualProperties)
+        self._parents = res.link_parent_names
+        self._set_link_vis = rospy.ServiceProxy(gazebo_ns + '/set_link_color', SetLinkColor)
 
     def callback(self, event):
         if len(self._visuals) == 0:
             return
-        req = SetLinkVisualPropertiesRequest()
-        req.link_visual_name = np.random.choice(self._visuals)
+        req = SetLinkColorRequest()
+        idx = np.random.choice(len(self._visuals))
+        req.link_visual_name = self._visuals[idx]
+        req.link_parent_name = self._parents[idx]
         color= ColorRGBA(*[np.random.uniform(self._color_range['r']['min'], self._color_range['r']['max']),
                            np.random.uniform(self._color_range['g']['min'], self._color_range['g']['max']),
                            np.random.uniform(self._color_range['b']['min'], self._color_range['b']['max']),

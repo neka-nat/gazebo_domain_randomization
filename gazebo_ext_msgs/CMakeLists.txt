@@ -17,6 +17,7 @@ add_service_files(DIRECTORY srv FILES
   GetSkyProperties.srv
   SetLinkVisualProperties.srv
   GetLinkVisualProperties.srv
+  SetLinkColor.srv
   SetSurfaceParams.srv
   GetSurfaceParams.srv
   )
